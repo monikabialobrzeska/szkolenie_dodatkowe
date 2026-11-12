@@ -116,6 +116,8 @@ Today an analyst has to open several sources by hand, find the matching road in 
 - **AC-15** *Missing limit:* every OSM road of class motorway, trunk, primary or secondary (including their link roads) with no speed-limit value at all creates a `conflict` candidate of type "missing limit".
 - **AC-16** *Unparseable value:* every OSM road whose speed-limit value cannot be interpreted (AC-09) creates a candidate of type "unparseable value" showing the raw value.
 - **AC-17** A road or sign with no match in the other source is counted in the report as "unmatched" and creates no conflict candidate.
+- **AC-17a** *Tag inconsistency:* every OSM road whose `source:maxspeed` or `maxspeed:type` names a Polish implicit limit category (`PL:urban`, `PL:rural`, `PL:expressway`, `PL:motorway`, `PL:living_street`, `PL:zone<N>`) and whose numeric `maxspeed` is outside the values allowed for that category in a documented table creates a `conflict` candidate of type "tag inconsistency" showing both tags and the allowed values. Unrecognised source values (e.g. `sign`, `survey`, `zone30` without `PL:`) are not evaluated and are counted in the report.
+- **AC-17b** *Stale sign:* a sign associated with exactly one road whose value differs from that road's limit and whose `last_seen_at` is earlier than the road's last OSM edit (`osm_timestamp`) creates a `needs_review` candidate with reason `stale_sign`, never `conflict`; the candidate shows both dates.
 - **AC-18** The camera heading of a photo is never used as the direction of travel.
 
 ### Ranking and identification
@@ -311,7 +313,7 @@ The automated decision rules must follow these constraints:
 
 - The system only flags candidates; it never states that a map is wrong. Wording in outputs uses "candidate", "disagreement", "needs review", never "error confirmed".
 - The system must not treat: a camera heading as travel direction; the nearest road as proof that a sign applies to it; a missing tag as a value of zero or "no limit"; a difference between snapshots of different dates as an error by itself.
-- When a rule cannot decide, the result is `needs_review` with one of a fixed set of reason codes (e.g. `conditional_limit`, `direction_unknown`, `multiple_candidate_roads`, `bridge_or_tunnel`, `unparseable_value`) and a one-sentence explanation.
+- When a rule cannot decide, the result is `needs_review` with one of a fixed set of reason codes (e.g. `conditional_limit`, `direction_unknown`, `multiple_candidate_roads`, `bridge_or_tunnel`, `stale_sign`, `unparseable_value`) and a one-sentence explanation.
 - Reference labels and detector outputs are shown as "working reference", never as ground truth.
 
 ---
@@ -332,10 +334,17 @@ The automated decision rules must follow these constraints:
 - Uncertain results (`needs_review`, `unsure`, abstentions): separate queue section and separate counts; `unsure` stays open for a second review.
 - Ranking: road importance, then size of the difference.
 
+**Decisions after the data profile and Databricks access check (2026-11-12, see `reports/map-qa/profile.md`):**
+- New check in the MVP: tag inconsistency between `source:maxspeed` / `maxspeed:type` and `maxspeed` (AC-17a); ~161 ways in the pinned snapshot.
+- Stale signs: a differing sign older than the road's last OSM edit is `needs_review` / `stale_sign` (AC-17b); ~80% of differing single-road signs in the pinned snapshot.
+- Only `bridge` ∈ {`yes`, `viaduct`} and `tunnel` ∈ {`yes`, `covered`} count as another level; `building_passage`, `culvert`, `boardwalk` do not.
+- A road with a limit in one direction only has an unknown limit in the other direction (never "no limit").
+- Default sign-to-road distance: 20 m (open question 1 resolved in ADR).
+
 **Open questions:**
-1. Default sign-to-road distance limit (the data README uses 25 m for photo linking; is the same value right for signs?).
+1. ~~Default sign-to-road distance limit~~ — resolved: 20 m (ADR-002).
 2. Mapping table for implicit Polish limits (`PL:urban` = 50, `PL:rural` = 90, etc.) — confirm values and source.
-3. How to treat a sign whose `last_seen_at` is older than the OSM edit date — stale sign or changed limit?
+3. ~~How to treat a sign whose `last_seen_at` is older than the OSM edit date~~ — resolved: AC-17b.
 4. Where verdicts are stored so they can be shared between two analysts later (out of scope now, but affects the storage choice).
 5. Should `tertiary` roads also count for "missing limit" if the number of candidates stays manageable?
 6. Phase 2: abstention threshold value and the probability source to use (to be set on a validation split before the final test).

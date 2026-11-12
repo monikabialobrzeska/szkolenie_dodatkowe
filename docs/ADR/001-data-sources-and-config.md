@@ -1,8 +1,10 @@
 # ADR-001: Data Sources and Configuration
 
 **Date:** 2026-11-12
-**Status:** Accepted
+**Status:** Accepted (revised 2026-11-12 after the data profile `reports/map-qa/profile.md` and a verified Databricks read)
 **Relates to:** [`docs/ADR/000-main-architecture.md`](000-main-architecture.md), PRD AC-01, AC-02, AC-04, AC-05, AC-05a–AC-05f, `mvp-scope.md` §3
+
+**Revision 2026-11-12:** geometry handling decided from the measured DuckDB 1.5.6 behaviour (§4.4); Overture CRS made explicit; verified Databricks facts recorded for Stage 2 (§4.5).
 
 ---
 
@@ -111,13 +113,26 @@ All six are required. Any missing file, unreadable file or missing column → `I
 ### 4.4 Reading rules
 
 - **OSM tags:** DuckDB extracts the string values of `maxspeed:forward`, `maxspeed:backward`, `maxspeed:conditional`, `maxspeed:variable`, `source:maxspeed` and `maxspeed:type` from the JSON `tags` column into the columns `maxspeed_forward`, `maxspeed_backward`, `maxspeed_conditional`, `maxspeed_variable`, `source_maxspeed`, `maxspeed_type`. The original `tags` string is passed through unchanged. Absent keys become null, never an empty string.
-- **Geometry:** read as WKB from the GeoParquet `geometry` column and decoded with Shapely; source CRS EPSG:4326 for OSM (per `sources.json`), OGC:CRS84 for Overture (same axis order). If the installed DuckDB returns a native GEOMETRY type instead of WKB bytes, the adapter must convert explicitly; the implementing agent verifies which applies with the installed version before writing the adapter.
-- **CSV typing:** columns are read with explicit types; `heading` and `distance_m` as nullable floats, IDs as strings except `osm_way_id` (BIGINT). An empty `heading` stays null (data README: `0.0` is north, not missing).
+- **Geometry (verified 2026-11-12):** DuckDB 1.5.6 returns the GeoParquet `geometry` column as a native `GEOMETRY` type carrying its CRS (`GEOMETRY('EPSG:4326')` for OSM, `GEOMETRY('OGC:CRS84')` for Overture), **even without the `spatial` extension loaded**; it is not a raw WKB blob. The adapter therefore loads `spatial` and selects `ST_AsWKB(geometry)` explicitly, then decodes the bytes with Shapely and assigns the CRS itself. The `spatial` extension is installed once per user profile (needs internet the first time; already present on the training VM after the profile run); `mapqa check-source` reports a missing extension as a source error (exit 4) with the install hint. All geometries in the snapshot are valid, non-empty LineStrings (OSM, Overture) and Points (signs).
+- **CRS:** OSM's GeoParquet metadata states EPSG:4326. Overture's metadata has **no `crs` entry**, which per the GeoParquet specification means OGC:CRS84; the adapter assigns OGC:CRS84 explicitly and does not rely on library defaults. Both use longitude/latitude axis order; transformations use `always_xy` semantics.
+- **CSV typing:** columns are read with explicit types; `heading` and `distance_m` as nullable floats, IDs as strings except `osm_way_id` (BIGINT). An empty `heading` stays null (data README: `0.0` is north, not missing; profile: 15 null, 23 zero).
+- **Timestamps:** `osm_timestamp` is a string such as `2026-02-21 10:25:53+00:00` and is parsed to a UTC timestamp; `first_seen_at`/`last_seen_at` of signs are parsed to UTC timestamps (needed by `stale_sign`, ADR-002 §6.2). A value that cannot be parsed is an input error naming the file and column.
 - **Reprojection:** roads and signs to EPSG:2180 immediately after decoding. Photos are not reprojected (their links are precomputed).
 - **Area filter:** signs whose point lies outside `area.bbox` (inclusive edges) are dropped and counted as skipped `outside_area`. No other dataset is filtered by area.
 - **Read-only:** files are opened read-only; DuckDB uses an in-memory database (no file created next to inputs); the adapter never writes inside `data_dir`.
 
-### 4.5 Checksums (AC-01)
+### 4.5 Verified Databricks facts (for Stage 2, not implemented in Stage 1)
+
+Verified on 2026-11-12 with one read-only `SELECT count(*)` per table through the SQL Statement Execution API (`query_databricks.py`):
+
+- Environment variables used by the course tooling: `DATABRICKS_HOST`, `DATABRICKS_TOKEN`, `DATABRICKS_SQL_WAREHOUSE_ID` (warehouse of the exercise: `97c455ee6fb1fcb9`, from `DATABRICKS.md`). Stage 2 reads host and warehouse from the TOML (`source.databricks.*`) with these variables as fallback; the token only from the environment.
+- Row counts of `workspace.map_qa.*` equal the local files for all five tables (profile §2).
+- With `format=JSON_ARRAY` every value arrives as a JSON string (e.g. `"99768"` for a `BIGINT`); the adapter must cast according to the returned `schema` before building the `InputBundle`, otherwise parity (AC-05b) fails on dtypes.
+- Geometry columns are `BINARY` WKB (per `DATABRICKS.md`), unlike the native `GEOMETRY` from local GeoParquet; both adapters converge on Shapely geometries decoded from WKB, which is the parity point.
+- The first statement may wake a stopped warehouse (`PENDING`/`RUNNING`); the adapter polls the same `statement_id` and never re-submits, and `FAILED`/`CANCELED` is a source error, never an empty result (AC-05d).
+- The transfer method for 99,768 rows with geometry (inline chunks vs `EXTERNAL_LINKS`/Arrow) is decided when Stage 2 starts.
+
+### 4.6 Checksums (AC-01)
 
 `checksums()` computes SHA-256 over the raw bytes of the six inputs, streaming in 1 MiB chunks. The pipeline calls it before `load()` and again after writing outputs. A mismatch is a bug: the run exits 1 with "input changed during run: <name>" and outputs stay in the temporary folder (not promoted).
 
@@ -245,9 +260,10 @@ sequenceDiagram
     F-->>P: all six inputs ok
     P->>F: checksums() (before)
     P->>F: load()
-    F->>D: read_parquet(osm_roads) + extract maxspeed* from tags
-    D-->>F: frame with WKB geometry
-    F->>G: decode WKB, set EPSG:4326, to_crs(2180)
+    F->>D: LOAD spatial
+    F->>D: read_parquet(osm_roads), ST_AsWKB(geometry), extract maxspeed* from tags
+    D-->>F: frame with WKB bytes
+    F->>G: decode WKB, assign EPSG:4326 explicitly, to_crs(2180)
     F->>D: read_parquet(overture) id, class
     F->>G: read_file(traffic_signs.geojson), to_crs(2180), bbox filter
     F->>D: read_csv(photos), read_csv(photo_road_links) with explicit types
@@ -269,6 +285,8 @@ sequenceDiagram
 | Missing input | Integration (CLI) | copy of data dir without `photos.csv` | exit 3, stderr names `photos.csv`, no queue | missing column in a CSV → names the column |
 | Tag extraction | Unit (part of ADR-002 case 1 fixtures) | real rows with `maxspeed:forward` in `tags` | `maxspeed_forward` populated, `tags` unchanged | key absent → null, not "" |
 | CRS | Unit | fixture road | frame CRS is EPSG:2180 | — |
+| Geometry type from DuckDB | Integration | real `osm_roads.parquet`, `overture_segments.parquet` | adapter yields Shapely LineStrings; Overture CRS assigned as OGC:CRS84 although metadata has none | `spatial` extension missing → exit 4 with install hint |
+| Timestamps | Unit | fixture road and sign | `osm_timestamp`, `last_seen_at` parsed to UTC | unparseable timestamp → input error naming the column |
 | Checksums | Integration | real snapshot | before == after, recorded per input | — |
 
 ### Technical acceptance criteria

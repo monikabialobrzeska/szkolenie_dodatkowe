@@ -1,9 +1,12 @@
 # ADR: Speed-Limit Conflict Finder (Kraków) — Main Architecture, Stage 1
 
 **Date:** 2026-11-12
-**Status:** Accepted
+**Status:** Accepted (revised 2026-11-12 after the data profile)
 **PRD:** [`docs/PRD.md`](../PRD.md)
 **Scope decision:** [`docs/mvp-scope.md`](../mvp-scope.md)
+**Data profile:** [`reports/map-qa/profile.md`](../../reports/map-qa/profile.md)
+
+**Revision 2026-11-12:** fourth check `tag_inconsistency` (PRD AC-17a) and reason `stale_sign` (AC-17b) added; geometry read path and Databricks facts verified (ADR-001 §4.4–4.5); prerequisites updated (uv installed).
 
 ---
 
@@ -19,7 +22,7 @@ This ADR set, together with the PRD and the MVP scope document, is the complete 
 | [`001-data-sources-and-config.md`](001-data-sources-and-config.md) | Configuration file, source selection, the `files` source adapter, input validation, checksums |
 | [`002-detection-rules.md`](002-detection-rules.md) | Speed-limit interpretation, sign-to-road association, check rules, reason codes, ranking, stable identifiers, photo evidence |
 
-**In scope (Stage 1, from `mvp-scope.md` §2):** items 1–8 — CLI, source configuration (`files` only implemented), interpretation, Check 1 (missing limit), Check 2 (sign vs road, always `needs_review`), unparseable-value check, evidence, ranking and stable IDs, outputs.
+**In scope (Stage 1, from `mvp-scope.md` §2):** items 1–8 incl. 5a — CLI, source configuration (`files` only implemented), interpretation, Check 1 (missing limit), Check 2 (sign vs road, always `needs_review`, incl. `stale_sign`), unparseable-value check, Check 3 (tag inconsistency, `conflict`), evidence, ranking and stable IDs, outputs.
 
 **Out of scope for Stage 1:** `databricks` and `public_api` sources (recognised and rejected), OSM vs Overture check, UI, verdict recording, model reading of signs (Phase 2), tertiary roads in "missing limit". The architecture keeps extension points for them (source adapter interface, stable IDs, `verdicts` placeholder in the output contract) but implements none.
 
@@ -73,6 +76,7 @@ app/
       missing_limit.py    Check 1
       sign_road.py        Check 2 incl. sign-to-road association
       unparseable.py      unparseable-value check
+      tag_inconsistency.py  implicit source vs maxspeed
     evidence.py           photo evidence per road
     ranking.py            ordering + stable IDs
     outputs/
@@ -120,6 +124,7 @@ Dependency direction is strictly downward in the list below; no module imports a
 | `checks.missing_limit` | Check 1 | `interpret`, models | `pipeline` |
 | `checks.sign_road` | Sign parsing, association within distance, Check 2 | `interpret`, GeoPandas | `pipeline` |
 | `checks.unparseable` | Unparseable-value candidates | `interpret` | `pipeline` |
+| `checks.tag_inconsistency` | `source:maxspeed` / `maxspeed:type` vs `maxspeed` (ADR-002 §6.4) | `interpret` | `pipeline` |
 | `evidence` | Attach photo IDs and counts per OSM way | models | `pipeline` |
 | `ranking` | Sort key and stable candidate IDs | models | `pipeline` |
 | `outputs.*` | Serialise candidates and counts; atomic write | models, GeoPandas | `pipeline` |
@@ -139,7 +144,7 @@ All models are immutable value objects (frozen dataclasses). Geometries are stor
 | `OsmRoad` table | `osm_id` (int), `osm_version` (int), `osm_timestamp` (str ISO), `highway` (str), `maxspeed` (str or null), `maxspeed_forward`, `maxspeed_backward`, `maxspeed_conditional`, `maxspeed_variable`, `source_maxspeed`, `maxspeed_type` (str or null, extracted from `tags`), `oneway`, `bridge`, `tunnel`, `layer` (str or null), `name` (str or null), `tags` (raw JSON string, unchanged), `geometry` (LineString, EPSG:2180) | ~99,768 rows |
 | `TrafficSign` table | `sign_id` (str, Mapillary map-feature id), `object_value` (str), `first_seen_at`, `last_seen_at` (str ISO), `image_ids` (list of str), `source_url` (str), `geometry` (Point, EPSG:2180) | 1,730 rows |
 | `Photo` table | all columns of `photos.csv`; `heading` kept as nullable float (empty ≠ 0) | 561 rows; never used for direction (AC-18) |
-| `PhotoRoadLink` table | all columns of `photo_road_links.csv` | 557 linked photos |
+| `PhotoRoadLink` table | all columns of `photo_road_links.csv` | 561 rows, one per photo: 558 with an OSM way (557 by source reference, 1 `spatial_fallback`), 3 without; only 230 distinct OSM ways have any photo |
 | `OvertureSegment` table | `id`, `class`, `sources`, `speed_limits`, `geometry` | Read and counted only (AC-04, AC-05f); not used by any Stage 1 check |
 
 ### Derived models
@@ -148,7 +153,7 @@ All models are immutable value objects (frozen dataclasses). Geometries are stor
 |---|---|---|
 | `SpeedLimit` | `kind` (`numeric` / `directional` / `missing` / `unparseable`), `value_kmh` (int or null), `forward_kmh`, `backward_kmh` (int or null), `implicit` (bool), `converted_from_mph` (bool), `conditional` (bool), `variable` (bool), `raw` (dict of the original `maxspeed*` tag values) | One per OSM road; computed by `interpret` (ADR-002 §3) |
 | `SignReading` | `sign_id`, `value_kmh` (int or null), `parse_status` (`ok` / `unparseable`) | One per sign (ADR-002 §4) |
-| `Candidate` | `candidate_id` (str, stable), `type` (`missing_limit` / `sign_road` / `unparseable_value`), `state` (`conflict` / `needs_review`), `reason_code` (str), `explanation` (str, one English sentence), `road_class` (str), `rank` (int, 1-based), `osm_ids` (list of int), `sign_id` (str or null), `osm_value_raw` (str or null), `osm_value_kmh` (int or null), `osm_forward_kmh`, `osm_backward_kmh` (int or null), `sign_value_kmh` (int or null), `diff_kmh` (int or null, absolute), `distance_m` (float or null, 1 decimal), `sign_first_seen_at`, `sign_last_seen_at` (str or null), `photo_count` (int), `photo_ids` (list of str, nearest first), `osm_version` (int), `osm_timestamp` (str), `geometry` | Produced by checks; `rank` and `candidate_id` set by `ranking` |
+| `Candidate` | `candidate_id` (str, stable), `type` (`missing_limit` / `sign_road` / `unparseable_value` / `tag_inconsistency`), `state` (`conflict` / `needs_review`), `reason_code` (str), `explanation` (str, one English sentence), `road_class` (str), `rank` (int, 1-based), `osm_ids` (list of int), `sign_id` (str or null), `osm_value_raw` (str or null), `osm_value_kmh` (int or null), `osm_forward_kmh`, `osm_backward_kmh` (int or null), `sign_value_kmh` (int or null), `diff_kmh` (int or null, absolute), `distance_m` (float or null, 1 decimal), `sign_first_seen_at`, `sign_last_seen_at` (str or null), `photo_count` (int), `photo_ids` (list of str, nearest first), `osm_version` (int), `osm_timestamp` (str), `geometry` | Produced by checks; `rank` and `candidate_id` set by `ranking` |
 | `RunCounts` | rows read per dataset; candidates per `type × state`; candidates per `road_class`; skipped records per reason; unmatched signs | Feeds report and run summary (AC-04) |
 | `RunResult` | `config` (resolved, no secrets), `source` (kind, location, read time), `input_checksums` (path → SHA-256, before and after), `counts`, `candidates`, `output_paths`, `exit_code` | Returned by `pipeline` |
 
@@ -203,6 +208,7 @@ Written to the output folder (default `reports/map-qa/stage1/`). All text files 
 | `MAPQA_DATA_SOURCE` | Source selection when `--source` is not given | No | `files` |
 | `MAPQA_CONFIG` | Path to the TOML configuration when `--config` is not given | No | `app/mapqa.toml` |
 | `DATABRICKS_TOKEN` | Stage 2 only. Not read in Stage 1; `check-source --source databricks` reports "not available yet" without inspecting it | No | set by the user in the terminal, never in a file |
+| `DATABRICKS_HOST`, `DATABRICKS_SQL_WAREHOUSE_ID` | Stage 2 only, fallback for `source.databricks.host` / `warehouse_id` (ADR-001 §4.5). Not read in Stage 1 | No | `https://<workspace>` / `97c455ee6fb1fcb9` |
 
 No other variables are read. `.env` files are not loaded by the tool.
 
@@ -217,7 +223,9 @@ No other variables are read. `.env` files are not loaded by the tool.
 **Decision:** The source adapter uses DuckDB to read and project columns and to extract the `maxspeed*`, `source:maxspeed` and `maxspeed:type` keys from `tags`; it returns pandas/GeoPandas frames with a fixed schema. All rule logic runs on those frames in GeoPandas/Shapely. A Databricks adapter in Stage 2 only has to return the same frames.
 **Rejected alternatives:**
 - GeoPandas only: JSON tag extraction row-by-row in Python is slower and the read path would share nothing with the Stage 2 SQL.
-- DuckDB spatial only: rule logic in SQL is harder to unit-test on six-row fixtures, and loading the spatial extension needs internet on first install.
+- DuckDB spatial only: rule logic in SQL is harder to unit-test on six-row fixtures.
+
+*Verified 2026-11-12:* DuckDB 1.5.6 returns GeoParquet geometry as a native `GEOMETRY` type, so the adapter loads the `spatial` extension and selects `ST_AsWKB(geometry)` (ADR-001 §4.4). The extension is installed once per user profile.
 **Consequences:**
 - (+) Rules are testable without any I/O; the source boundary is the parity point for Stage 2.
 - (-) Two data libraries; geometry crosses the boundary as WKB and must be decoded with Shapely.
@@ -316,6 +324,7 @@ flowchart TB
         ml[checks/missing_limit]
         sr[checks/sign_road]
         up[checks/unparseable]
+        ti[checks/tag_inconsistency]
         ev[evidence.py]
         rk[ranking.py]
     end
@@ -340,8 +349,8 @@ flowchart TB
     base -.-> dbx
     files --> data
     pipe --> interp
-    pipe --> ml & sr & up
-    ml & sr & up --> interp
+    pipe --> ml & sr & up & ti
+    ml & sr & up & ti --> interp
     pipe --> ev --> rk
     pipe --> q & rep & rs
     q & rep & rs --> out
@@ -359,12 +368,13 @@ flowchart LR
     A1 --> I[interpret: SpeedLimit per road]
     I --> K1[Check 1: missing_limit]
     I --> K3[unparseable_value]
+    I --> K4[Check 3: tag_inconsistency]
     B1 --> P[parse sign value]
     P --> S[associate: non-service roads<br/>within 20 m]
     A1 --> S
     S --> K2[Check 2: sign_road]
     I --> K2
-    K1 & K2 & K3 --> CAND[candidates]
+    K1 & K2 & K3 & K4 --> CAND[candidates]
     C1 & D1 --> EV[photo evidence per osm_id]
     EV --> CAND
     CAND --> R[rank + stable IDs]
@@ -395,7 +405,7 @@ sequenceDiagram
     P->>F: checksums(before)
     P->>F: load() 
     F-->>P: InputBundle (5 frames, EPSG:2180) + row counts
-    P->>CH: interpret, missing_limit, sign_road, unparseable
+    P->>CH: interpret, missing_limit, sign_road, unparseable, tag_inconsistency
     CH-->>P: candidates + skipped/unmatched counts
     P->>P: attach photo evidence, rank, assign IDs
     P->>O: write to temp folder
@@ -481,7 +491,7 @@ Unit (six cases, details and fixture rows in ADR-002 §9):
 2. **Directional comparison** — sign equals `maxspeed:forward` or `:backward` → no candidate; equals neither → `needs_review` / `direction_unknown`.
 3. **Sign association** — exactly one non-service road within 20 m vs two or more; boundary at exactly 20.0 m counted as inside; `service` roads ignored; 0 roads → unmatched count.
 4. **Bridge or tunnel / conditional / variable** on the single associated road → `needs_review` with the specific reason, precedence as in ADR-002 §6.
-5. **Missing limit** — main classes and their links without any `maxspeed*` → `conflict`; `tertiary` and roads with directional tags → none.
+5. **Road-level checks** — missing limit: main classes and their links without any `maxspeed*` → `conflict`, `tertiary` and roads with directional tags → none; tag inconsistency: `PL:urban` + 70 → `conflict`, `PL:rural` + 100 → none.
 6. **Ranking and stable IDs** — order by class, then `diff_kmh` desc with nulls last, then ID; same input in shuffled row order → same IDs and ranks.
 
 `config` precedence and exit-code mapping are covered by parametrised cases inside the integration suite (they need the CLI process anyway).
@@ -496,7 +506,7 @@ Integration:
 | Missing input | data dir copy in `tmp_path` without `photos.csv` | exit 3; stderr names `photos.csv`; no `review_queue.csv` written (AC-02) |
 | Unavailable source | `--source databricks` | exit 4; stderr names the source; no outputs except `last_failed_run.json` |
 | Precedence | `--source files` with `MAPQA_DATA_SOURCE=databricks` | exit 0 (CLI wins) |
-| Order of magnitude | real snapshot | `missing_limit` count within 250–330 (profiling: 290); signs with exactly one road within 20 m within 380–460 (profiling: 421) |
+| Order of magnitude | real snapshot | ranges of ADR-002 TAC-002-04: `missing_limit` 250–330 (measured 290), `tag_inconsistency` 140–180 (161), single-road signs 380–460 (420), `stale_sign` 170–210 (191) |
 
 ### Technical acceptance criteria
 
@@ -514,11 +524,13 @@ Integration:
 
 ## 11. Prerequisites and Open Questions
 
-**Prerequisites found on the training VM (2026-11-12):**
-- `uv` is not on the PATH of the training VM; it must be installed before implementation (the data README already assumes uv). The system Python is 3.14 without DuckDB/GeoPandas — the tool must never rely on it.
-- Context7 MCP returns "Invalid API key"; fix the user-level configuration (`claude mcp add --scope user …` with a valid `ctx7sk…` key in the environment, never in the repo) to add Context7 IDs to §2.
+**Prerequisites on the training VM (updated 2026-11-12):**
+- `uv` 0.13.7 installed via winget; it manages Python 3.12.16 for the project. The system Python 3.14 has no DuckDB/GeoPandas — the tool must never rely on it.
+- DuckDB `spatial` extension installed in the user profile (by the profile run).
+- Databricks CLI 1.26.0 installed; read access to `workspace.map_qa` verified (Stage 2 only).
+- Context7 MCP still returns "Invalid API key"; fix the user-level configuration (`CONTEXT7_API_KEY` in the environment, never in the repo) to add Context7 IDs to §2.
 
 **Open questions (do not block Stage 1):**
 1. Should `track` roads be excluded from sign association like `service`? Stage 1 excludes only `service`, matching the profiling.
-2. PRD open question 3 (stale sign vs newer OSM edit): Stage 1 shows both dates as evidence and does not use them in rules.
+2. ~~PRD open question 3 (stale sign)~~ — resolved: reason `stale_sign` (PRD AC-17b, ADR-002 §6.2).
 3. PRD open question 4 (shared verdict storage) is deferred with verdicts.

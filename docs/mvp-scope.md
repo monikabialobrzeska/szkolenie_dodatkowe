@@ -62,6 +62,20 @@ Cross-check on the curated sign set (`signs/`): for 71 certain numeric labels wi
 - The numeric positives were selected from Mapillary detections, so the detector looks perfect on them by construction. The real test is the **negatives**: zone signs, zone ends and limit ends, where the detector errs on 5/25. A model is worth adding only if it does better there without losing the positives.
 - With a 25-call budget, the model can be piloted but not calibrated. Results are reported with explicit denominators and no claims of statistical significance.
 
+### 1.5 Findings of the full data profile (2026-11-12)
+
+Details and queries: `reports/map-qa/profile.md`. Local files and the five Databricks tables have identical row counts.
+
+| Finding | Number | Consequence |
+|---|---|---|
+| Signs with exactly one non-service road within 20 m | 420: 180 equal, 162 differ, 78 road without limit | Confirms §1.3 |
+| … of the 240 not equal, sign last seen before the road's last OSM edit | **191** | New reason `stale_sign` |
+| `source:maxspeed` / `maxspeed:type` contradicts `maxspeed` (e.g. `PL:urban` + `70`) | **161 ways** (102 main roads) | New Check 3 in Stage 1 |
+| `tunnel=building_passage` among `tunnel` tags | 605 of 827 | Not treated as another level |
+| Ways with a limit in one direction only, no `maxspeed` | 58 | Other direction = unknown |
+| Distinct OSM ways with any linked photo | 230 of 99,768 | Most candidates have no photo |
+| Signs last seen before 2025 | 1,200 of 1,730 | Sign age shown as evidence |
+
 ---
 
 ## 2. Decision: what the MVP contains
@@ -74,7 +88,8 @@ The MVP is a **command-line tool without a user interface**. It produces files t
 2. **Data-source configuration** (see §3). Only `files` is implemented in Stage 1. Other values are recognised and rejected with a clear "not available yet" message.
 3. **Speed-limit interpretation:** numeric `maxspeed`, `maxspeed:forward` / `:backward`, conditional and variable flags. Raw tags are kept. A value that cannot be interpreted is flagged (0 such values expected in this snapshot; covered by test fixtures).
 4. **Check 1 — Missing limit on main roads:** state `conflict`. Expected order of magnitude: ~290 ways.
-5. **Check 2 — Sign vs road:** a sign with exactly one non-service road within the distance limit and a value different from that road's limit (respecting directional tags) → state `needs_review`, reason `sign_road_mismatch`. More than one candidate road, a conditional or variable limit, or a bridge or tunnel → `needs_review` with the specific reason. An equal value → no candidate.
+5. **Check 2 — Sign vs road:** a sign with exactly one non-service road within the distance limit and a value different from that road's limit (respecting directional tags) → state `needs_review`, reason `sign_road_mismatch`. More than one candidate road, a conditional or variable limit, a bridge or tunnel, or a sign older than the road's last OSM edit (`stale_sign`) → `needs_review` with the specific reason. An equal value → no candidate.
+5a. **Check 3 — Tag inconsistency** (added 2026-11-12 after the data profile): `source:maxspeed` / `maxspeed:type` names a Polish implicit category whose allowed values do not include the numeric `maxspeed` (e.g. `PL:urban` with `70`) → state `conflict`. Expected order of magnitude: ~161 ways (102 on main roads).
 6. **Evidence:** source IDs, raw and interpreted values, distance, sign dates, and the IDs and count of all photos linked to the road.
 7. **Ranking and stable candidate IDs** as in PRD AC-19 and AC-20.
 8. **Outputs:** review queue as CSV and GeoJSON (opens in QGIS, so it replaces the UI for now), summary report in Markdown, and a run summary in JSON.
