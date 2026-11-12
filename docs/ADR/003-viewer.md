@@ -19,7 +19,10 @@ Not covered: recording verdicts (AC-23, AC-24), review-status filter, a server, 
 | Library | Context7 ID or official docs | Used for |
 |---|---|---|
 | Leaflet 1.9.4 (from `unpkg.com/leaflet@1.9.4`) | https://leafletjs.com/reference.html | Map, GeoJSON layers, popups, fit bounds |
-| OpenStreetMap standard tiles | https://operations.osmfoundation.org/policies/tiles/ | Background map; attribution required, low volume only |
+| Esri World Light Gray Canvas (default), Esri World Imagery | https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer | Calm grey default basemap so candidate colours stand out; satellite option. No key required (verified 2026-11-12) |
+| OpenStreetMap standard tiles (colour and CSS-greyscale variants) | https://operations.osmfoundation.org/policies/tiles/ | Optional basemaps; attribution required, low volume only; may be blocked for `file://` pages without Referer |
+
+**Basemaps (revised 2026-11-12 after user feedback "hard to see / no access to the basemap"):** a layer switcher offers Light grey (Esri, default), OpenStreetMap (grey), OpenStreetMap, Satellite (Esri) and No basemap; after 4 tile failures the viewer switches to the next basemap and says so on the map. CARTO was rejected: it now returns HTTP 200 with an "API KEY REQUIRED" image, which no fallback can detect. Data attribution (OSM, Overture, Mapillary) is a fixed part of the attribution control, independent of the basemap. Conflicts are drawn above review points; the selected candidate has a yellow halo.
 | Python `json`, `html`, `string.Template` | https://docs.python.org/3.12/library/string.html#template-strings | Generating the page |
 | Playwright for Python (msedge channel) | https://playwright.dev/python/docs/browsers#google-chrome--microsoft-edge | Manual QA screenshots (dev tool, not a runtime dependency) |
 

@@ -25,4 +25,10 @@ def test_render_embeds_data_safely():
     assert "OpenStreetMap contributors" in html
     assert "leaflet@1.9.4" in html
     assert "No candidates match the filters" in html
+    # several basemaps with automatic fallback (OSM tiles may be blocked for file:// pages)
+    # CARTO was dropped on 2026-11-12: it now answers 200 with an "API KEY REQUIRED" image, which no fallback can detect
+    for marker in ("World_Light_Gray_Base", "tile.openstreetmap.org", "OpenStreetMap (grey)", "World_Imagery",
+                   "No basemap", "Esri"):
+        assert marker in html, marker
+    assert "cartocdn" not in html
     assert "error" not in re.sub(r"<script.*?</script>", "", html, flags=re.S).lower()
