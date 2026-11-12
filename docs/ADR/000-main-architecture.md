@@ -258,7 +258,7 @@ No other variables are read. `.env` files are not loaded by the tool.
 **Review trigger:** More than five subcommands, or Stage 3 needs interactive confirmation prompts.
 
 ### D4. Stage 1 outputs are files; no UI, no verdict storage
-**Status:** Accepted
+**Status:** Amended 2026-11-12 by [ADR-003](003-viewer.md): a read-only static `viewer.html` is added to the outputs; verdict storage remains out of Stage 1.
 **Date:** 2026-11-12
 **Context:** PRD §9 leaves the delivery form to the ADR; `mvp-scope.md` §2 defers UI and verdicts.
 **Decision:** CSV + GeoJSON + Markdown + JSON as in §6.2. QGIS is the review tool for Stage 1.

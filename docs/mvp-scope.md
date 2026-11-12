@@ -92,7 +92,8 @@ The MVP is a **command-line tool without a user interface**. It produces files t
 5a. **Check 3 — Tag inconsistency** (added 2026-11-12 after the data profile): `source:maxspeed` / `maxspeed:type` names a Polish implicit category whose allowed values do not include the numeric `maxspeed` (e.g. `PL:urban` with `70`) → state `conflict`. Expected order of magnitude: ~161 ways (102 on main roads).
 6. **Evidence:** source IDs, raw and interpreted values, distance, sign dates, and the IDs and count of all photos linked to the road.
 7. **Ranking and stable candidate IDs** as in PRD AC-19 and AC-20.
-8. **Outputs:** review queue as CSV and GeoJSON (opens in QGIS, so it replaces the UI for now), summary report in Markdown, and a run summary in JSON.
+8. **Outputs:** review queue as CSV and GeoJSON (opens in QGIS), summary report in Markdown, and a run summary in JSON.
+8a. **Read-only viewer** (added 2026-11-12): `viewer.html` next to the outputs — summary, filterable candidate table, map, candidate detail with evidence. English UI. See ADR-003.
 
 ### Stage 2 — Databricks as a second source
 
@@ -109,7 +110,7 @@ The MVP is a **command-line tool without a user interface**. It produces files t
 
 | Item | Reason for deferring |
 |---|---|
-| UI (static report or dashboard) | Outputs open in QGIS. The UI is built once the queue content is stable. |
+| UI with verdict recording (dashboard) | A **read-only static viewer** (map + table + candidate detail) was moved into Stage 1 on 2026-11-12 at the user's request (ADR-003). Recording verdicts in the UI stays deferred. |
 | Recording verdicts and carrying them over (AC-23, AC-24) | Needs a UI or an agreed file workflow. Stable IDs are built now so verdicts can be added without breaking anything. |
 | Promoting sign-vs-road to `conflict` | Only after a manual sample of ~30 candidates shows acceptable precision. |
 | Using model readings in the review queue (AC-40) | Only after the pilot beats the detector baseline on negatives. |
