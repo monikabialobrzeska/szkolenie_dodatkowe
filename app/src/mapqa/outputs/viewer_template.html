@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Speed-limit candidates — Kraków</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<style>
+  :root { --conflict: #c62828; --review: #ef8f00; --ink: #1d2430; --muted: #5d6676; --line: #dde2ea;
+          --bg: #f6f7f9; --panel: #ffffff; --accent: #1f5fbf; --sel: #e8f0fd; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--ink); background: var(--bg);
+         display: flex; flex-direction: column; }
+  header { background: var(--panel); border-bottom: 1px solid var(--line); padding: 10px 16px; }
+  header h1 { font-size: 18px; margin: 0 0 2px; }
+  header .meta { color: var(--muted); font-size: 12px; }
+  details.summary { margin-top: 6px; }
+  details.summary summary { cursor: pointer; color: var(--accent); font-weight: 600; }
+  .tables { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 8px; }
+  table.counts { border-collapse: collapse; font-size: 12px; }
+  table.counts th, table.counts td { border: 1px solid var(--line); padding: 3px 8px; text-align: right; }
+  table.counts th:first-child, table.counts td:first-child { text-align: left; }
+  main { flex: 1; display: grid; grid-template-columns: minmax(420px, 46%) 1fr; min-height: 0; }
+  #left { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--line); background: var(--panel); }
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--line); align-items: end; }
+  .filters label { display: flex; flex-direction: column; font-size: 11px; color: var(--muted); gap: 2px; }
+  .filters select { font: inherit; padding: 3px 4px; min-width: 120px; }
+  #count { margin-left: auto; font-size: 12px; color: var(--muted); }
+  #tablewrap { flex: 1 1 50%; overflow: auto; min-height: 120px; }
+  table.queue { border-collapse: collapse; width: 100%; font-size: 12px; }
+  table.queue th { position: sticky; top: 0; background: #eef1f5; text-align: left; padding: 5px 6px; border-bottom: 1px solid var(--line); }
+  table.queue td { padding: 4px 6px; border-bottom: 1px solid #eef0f3; white-space: nowrap; }
+  table.queue tr { cursor: pointer; }
+  table.queue tr:hover td { background: #f4f7fb; }
+  table.queue tr.selected td { background: var(--sel); }
+  .badge { display: inline-block; padding: 0 6px; border-radius: 8px; color: #fff; font-size: 11px; }
+  .badge.conflict { background: var(--conflict); }
+  .badge.needs_review { background: var(--review); }
+  .empty { padding: 16px; color: var(--muted); }
+  #detail { flex: 0 0 auto; max-height: 48%; overflow: auto; border-top: 2px solid var(--line); padding: 10px 12px; }
+  #detail h2 { font-size: 15px; margin: 0 0 4px; word-break: break-all; }
+  #detail .why { background: #fff8e8; border-left: 3px solid var(--review); padding: 6px 8px; margin: 6px 0; }
+  #detail .why.conflict { background: #fdecec; border-left-color: var(--conflict); }
+  #detail dl { display: grid; grid-template-columns: max-content 1fr; gap: 2px 12px; margin: 6px 0; font-size: 12px; }
+  #detail dt { color: var(--muted); }
+  #detail dd { margin: 0; word-break: break-word; }
+  .nav { display: flex; gap: 8px; margin-bottom: 6px; }
+  .nav button { font: inherit; padding: 3px 10px; cursor: pointer; }
+  .photos { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0; }
+  .photo { flex: 0 0 160px; font-size: 11px; color: var(--muted); }
+  .photo img { width: 160px; height: 110px; object-fit: cover; display: block; border-radius: 3px; background: #ddd; }
+  .photo .na { width: 160px; height: 110px; display: flex; align-items: center; justify-content: center; text-align: center;
+               background: #eceff3; border-radius: 3px; padding: 6px; }
+  #map { width: 100%; height: 100%; min-height: 300px; background: #e9edf2; }
+  #mapnote { position: absolute; z-index: 1000; left: 50%; transform: translateX(-50%); top: 8px; background: #fff;
+             border: 1px solid var(--line); padding: 3px 8px; font-size: 12px; display: none; }
+  .right { position: relative; }
+  .legend { position: absolute; z-index: 1000; right: 8px; top: 8px; background: #fff; border: 1px solid var(--line);
+            padding: 4px 8px; font-size: 12px; }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Speed-limit candidates — Kraków</h1>
+  <div class="meta" id="meta">Loading candidates…</div>
+  <details class="summary"><summary>Summary</summary><div class="tables" id="summary"></div></details>
+</header>
+<main>
+  <section id="left">
+    <div class="filters">
+      <label>Type <select id="f-type"></select></label>
+      <label>State <select id="f-state"></select></label>
+      <label>Road class <select id="f-class"></select></label>
+      <span id="count"></span>
+    </div>
+    <div id="tablewrap">
+      <table class="queue">
+        <thead><tr><th>#</th><th>Type</th><th>State</th><th>Road class</th><th>OSM</th><th>Sign</th><th>Diff</th></tr></thead>
+        <tbody id="rows"><tr><td colspan="7" class="empty">Loading candidates…</td></tr></tbody>
+      </table>
+    </div>
+    <div id="detail"><p class="empty">Select a candidate in the table or on the map.</p></div>
+  </section>
+  <section class="right">
+    <div id="map"></div>
+    <div id="mapnote">Map tiles unavailable</div>
+    <div class="legend"><span class="dot" style="background:var(--conflict)"></span>conflict
+      &nbsp;<span class="dot" style="background:var(--review)"></span>needs review</div>
+  </section>
+</main>
+<script type="application/json" id="mapqa-data">__MAPQA_DATA__</script>
+<script>
+(function () {
+  "use strict";
+  const DATA = JSON.parse(document.getElementById("mapqa-data").textContent);
+  const ALL = DATA.candidates;
+  const COLORS = { conflict: "#c62828", needs_review: "#ef8f00" };
+  const $ = (id) => document.getElementById(id);
+  const esc = (v) => String(v == null || v === "" ? "—" : v).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const list = (v) => Array.isArray(v) ? v : (v ? String(v).split(";") : []);
+  let filtered = ALL.slice();
+  let selectedId = null;
+
+  // ---------- header + summary ----------
+  const s = DATA.summary;
+  $("meta").textContent = `OSM extract ${s.snapshot.osm_extract_date} · Overture ${s.snapshot.overture_release} · ` +
+    `source ${s.source.kind} · read ${s.source.read_at} · ${ALL.length} candidates · ` +
+    `sign-to-road distance ${s.config.sign_road_distance_m} m`;
+  function countTable(title, head, rows) {
+    return `<table class="counts"><caption style="text-align:left;font-weight:600">${esc(title)}</caption><tr>` +
+      head.map((h) => `<th>${esc(h)}</th>`).join("") + "</tr>" +
+      rows.map((r) => "<tr>" + r.map((c) => `<td>${esc(c)}</td>`).join("") + "</tr>").join("") + "</table>";
+  }
+  const types = [...new Set(ALL.map((c) => c.type))].sort();
+  const tsRows = types.map((t) => {
+    const k = ALL.filter((c) => c.type === t && c.state === "conflict").length;
+    const r = ALL.filter((c) => c.type === t && c.state === "needs_review").length;
+    return [t, k, r, k + r];
+  });
+  const byClass = {};
+  ALL.forEach((c) => { byClass[c.road_class] = (byClass[c.road_class] || 0) + 1; });
+  $("summary").innerHTML =
+    countTable("By type and state", ["Type", "conflict", "needs review", "Total"], tsRows) +
+    countTable("By road class", ["Road class", "Candidates"], Object.entries(byClass).sort((a, b) => b[1] - a[1])) +
+    countTable("Skipped / unmatched", ["Reason", "Records"], Object.entries(s.counts.skipped).sort()) +
+    countTable("Rows read", ["Dataset", "Rows"], Object.entries(s.inputs).filter(([k]) => k !== "snapshot").map(([k, v]) => [k, v.rows]));
+
+  // ---------- filters ----------
+  function fillSelect(id, values) {
+    $(id).innerHTML = `<option value="">All</option>` + values.map((v) => `<option value="${esc(v)}">${esc(v)}</option>`).join("");
+    $(id).addEventListener("change", applyFilters);
+  }
+  fillSelect("f-type", types);
+  fillSelect("f-state", ["conflict", "needs_review"]);
+  fillSelect("f-class", Object.keys(byClass).sort());
+
+  // ---------- map ----------
+  let map = null, layer = null;
+  const layersById = {};
+  if (window.L) {
+    map = L.map("map", { preferCanvas: true }).setView([50.05, 19.95], 11);
+    const tiles = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors · ' +
+        "Overture Maps Foundation · Mapillary (CC BY-SA 4.0 / ODbL)",
+    }).addTo(map);
+    tiles.on("tileerror", () => { $("mapnote").style.display = "block"; });
+  } else {
+    $("map").innerHTML = '<p class="empty">Map unavailable (no network for the map library). ' +
+      "© OpenStreetMap contributors · Overture Maps Foundation · Mapillary (CC BY-SA 4.0 / ODbL)</p>";
+  }
+  function drawMap() {
+    if (!map) return;
+    if (layer) layer.remove();
+    Object.keys(layersById).forEach((k) => delete layersById[k]);
+    const features = filtered.filter((c) => c.geometry).map((c) => ({ type: "Feature", geometry: c.geometry, properties: { id: c.candidate_id, state: c.state } }));
+    layer = L.geoJSON({ type: "FeatureCollection", features }, {
+      style: (f) => ({ color: COLORS[f.properties.state], weight: 4, opacity: 0.85 }),
+      pointToLayer: (f, latlng) => L.circleMarker(latlng, { radius: 5, color: COLORS[f.properties.state], weight: 1, fillOpacity: 0.85 }),
+      onEachFeature: (f, l) => { layersById[f.properties.id] = l; l.on("click", () => select(f.properties.id, true)); },
+    }).addTo(map);
+  }
+
+  // ---------- table ----------
+  function applyFilters() {
+    const t = $("f-type").value, st = $("f-state").value, cl = $("f-class").value;
+    filtered = ALL.filter((c) => (!t || c.type === t) && (!st || c.state === st) && (!cl || c.road_class === cl));
+    $("count").textContent = `${filtered.length} of ${ALL.length} candidates`;
+    const body = $("rows");
+    if (!filtered.length) {
+      body.innerHTML = `<tr><td colspan="7" class="empty">No candidates match the filters</td></tr>`;
+    } else {
+      body.innerHTML = filtered.map((c) => {
+        const osm = c.osm_value_kmh != null && c.osm_value_kmh !== "" ? c.osm_value_kmh
+          : (c.osm_forward_kmh != null || c.osm_backward_kmh != null) ? `${c.osm_forward_kmh ?? "?"}/${c.osm_backward_kmh ?? "?"}` : "";
+        return `<tr data-id="${esc(c.candidate_id)}"${c.candidate_id === selectedId ? ' class="selected"' : ""}>` +
+          `<td>${c.rank}</td><td>${esc(c.type)}</td><td><span class="badge ${c.state}">${esc(c.state.replace("_", " "))}</span></td>` +
+          `<td>${esc(c.road_class)}</td><td>${esc(osm)}</td><td>${esc(c.sign_value_kmh)}</td><td>${esc(c.diff_kmh)}</td></tr>`;
+      }).join("");
+    }
+    drawMap();
+    if (map && filtered.length && layer && layer.getBounds().isValid()) map.fitBounds(layer.getBounds(), { padding: [20, 20] });
+  }
+  $("rows").addEventListener("click", (e) => { const tr = e.target.closest("tr[data-id]"); if (tr) select(tr.dataset.id, false); });
+
+  // ---------- detail ----------
+  function photoStrip(c) {
+    const ids = list(c.photo_ids);
+    if (!ids.length) return "<p>No photos linked</p>";
+    return `<p>${ids.length} photo${ids.length === 1 ? "" : "s"} (nearest first)</p><div class="photos">` + ids.map((pid) => {
+      const p = DATA.photos[pid] || {};
+      const img = p.thumb ? `<a href="${esc(p.source_url || p.thumb)}" target="_blank" rel="noopener"><img src="${esc(p.thumb)}" alt="${esc(pid)}" loading="lazy"></a>`
+        : `<div class="na">Photo unavailable offline<br>${p.source_url ? `<a href="${esc(p.source_url)}" target="_blank" rel="noopener">open source</a>` : ""}</div>`;
+      return `<div class="photo">${img}${esc((p.captured_at || "").slice(0, 10))} · ${esc(p.author)}<br>${esc(p.license)}</div>`;
+    }).join("") + "</div>";
+  }
+  function select(id, fromMap) {
+    selectedId = id;
+    const c = ALL.find((x) => x.candidate_id === id);
+    if (!c) return;
+    document.querySelectorAll("#rows tr.selected").forEach((tr) => tr.classList.remove("selected"));
+    const tr = document.querySelector(`#rows tr[data-id="${CSS.escape(id)}"]`);
+    if (tr) { tr.classList.add("selected"); if (fromMap) tr.scrollIntoView({ block: "center" }); }
+    const ways = list(c.osm_ids).map((w) => `<a href="https://www.openstreetmap.org/way/${esc(w)}" target="_blank" rel="noopener">way ${esc(w)}</a>`).join(", ");
+    const sign = c.sign_id ? `<a href="https://www.mapillary.com/app/?mapFeatureId=${esc(c.sign_id)}" target="_blank" rel="noopener">${esc(c.sign_id)}</a> (working reference)` : "—";
+    const idx = filtered.findIndex((x) => x.candidate_id === id);
+    $("detail").innerHTML =
+      `<div class="nav"><button id="prev" ${idx <= 0 ? "disabled" : ""}>◀ Previous</button>` +
+      `<button id="next" ${idx < 0 || idx >= filtered.length - 1 ? "disabled" : ""}>Next ▶</button>` +
+      `<span style="color:var(--muted);align-self:center">#${c.rank}</span></div>` +
+      `<h2>${esc(c.candidate_id)}</h2>` +
+      `<div class="why ${c.state}"><span class="badge ${c.state}">${esc(c.state.replace("_", " "))}</span> <b>${esc(c.reason_code)}</b><br>${esc(c.explanation)}</div>` +
+      `<dl><dt>Type</dt><dd>${esc(c.type)}</dd><dt>Road class</dt><dd>${esc(c.road_class)}</dd>` +
+      `<dt>OSM value (raw)</dt><dd>${esc(c.osm_value_raw)}</dd>` +
+      `<dt>OSM interpreted</dt><dd>${esc(c.osm_value_kmh)} km/h · forward ${esc(c.osm_forward_kmh)} · backward ${esc(c.osm_backward_kmh)}</dd>` +
+      `<dt>Sign value</dt><dd>${esc(c.sign_value_kmh)}${c.sign_value_kmh ? " km/h" : ""}</dd>` +
+      `<dt>Difference</dt><dd>${esc(c.diff_kmh)}${c.diff_kmh !== null && c.diff_kmh !== "" ? " km/h" : ""}</dd>` +
+      `<dt>Distance sign–road</dt><dd>${esc(c.distance_m)}${c.distance_m ? " m" : ""}</dd>` +
+      `<dt>Sign seen</dt><dd>${esc((c.sign_first_seen_at || "").slice(0, 10))} – ${esc((c.sign_last_seen_at || "").slice(0, 10))}</dd>` +
+      `<dt>OSM way(s)</dt><dd>${ways}</dd><dt>OSM last edit</dt><dd>${esc((c.osm_timestamp || "").slice(0, 10))} (v${esc(c.osm_version)})</dd>` +
+      `<dt>Mapillary sign</dt><dd>${sign}</dd></dl>` + photoStrip(c);
+    $("prev").onclick = () => idx > 0 && select(filtered[idx - 1].candidate_id, true);
+    $("next").onclick = () => idx < filtered.length - 1 && select(filtered[idx + 1].candidate_id, true);
+    const l = layersById[id];
+    if (map && l) {
+      if (l.getBounds) map.fitBounds(l.getBounds(), { maxZoom: 18, padding: [40, 40] });
+      else map.setView(l.getLatLng(), 18);
+      if (l.setStyle) { layer.resetStyle(); l.setStyle({ weight: 8, color: "#1f5fbf" }); }
+      if (l.bringToFront) l.bringToFront();
+    }
+  }
+
+  applyFilters();
+})();
+</script>
+</body>
+</html>
