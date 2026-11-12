@@ -1,0 +1,32 @@
+[project]
+name = "mapqa"
+version = "0.1.0"
+description = "Speed-limit conflict finder for Krakow map QA (Stage 1: local files)"
+authors = [
+    { name = "Monika Bialobrzeska" }
+]
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "duckdb==1.5.6",
+    "geopandas==1.2.0",
+    "pyarrow==23.0.1",
+]
+
+[project.scripts]
+mapqa = "mapqa.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.13.7,<0.14.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "integration: runs the real CLI on the pinned snapshot (slower)",
+]
+addopts = "-ra --strict-markers"

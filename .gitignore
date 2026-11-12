@@ -21,3 +21,5 @@ __pycache__/
 **/target/
 *.class
 /.idea
+.venv/
+reports/map-qa/stage1/

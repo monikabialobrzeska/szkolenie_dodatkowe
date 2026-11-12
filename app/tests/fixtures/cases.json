@@ -1,0 +1,94 @@
+{
+  "numeric": {
+    "osm_id": 19846887,
+    "query": "maxspeed = '50' AND fwd IS NULL AND bwd IS NULL AND src IS NULL AND typ IS NULL AND cond IS NULL AND highway = 'residential'"
+  },
+  "directional_both": {
+    "osm_id": 22810656,
+    "query": "maxspeed IS NULL AND fwd IS NOT NULL AND bwd IS NOT NULL AND fwd <> bwd AND fwd NOT LIKE 'PL:%' AND bwd NOT LIKE 'PL:%'"
+  },
+  "forward_only": {
+    "osm_id": 24559626,
+    "query": "maxspeed IS NULL AND fwd IS NOT NULL AND bwd IS NULL"
+  },
+  "implicit_in_backward": {
+    "osm_id": 907138970,
+    "query": "osm_id = 907138970"
+  },
+  "conditional_motorway": {
+    "osm_id": 19793303,
+    "query": "cond IS NOT NULL"
+  },
+  "variable_motorway": {
+    "osm_id": 119039118,
+    "query": "var = 'yes'"
+  },
+  "main_no_limit": {
+    "osm_id": 77882926,
+    "query": "highway = 'secondary' AND maxspeed IS NULL AND fwd IS NULL AND bwd IS NULL"
+  },
+  "main_link_no_limit": {
+    "osm_id": 22939434,
+    "query": "highway = 'motorway_link' AND maxspeed IS NULL AND fwd IS NULL AND bwd IS NULL"
+  },
+  "tertiary_no_limit": {
+    "osm_id": 19803315,
+    "query": "highway = 'tertiary' AND maxspeed IS NULL AND fwd IS NULL AND bwd IS NULL"
+  },
+  "bridge_yes": {
+    "osm_id": 19796385,
+    "query": "bridge = 'yes' AND maxspeed IS NOT NULL"
+  },
+  "building_passage": {
+    "osm_id": 83675713,
+    "query": "tunnel = 'building_passage' AND maxspeed IS NOT NULL"
+  },
+  "urban_70": {
+    "osm_id": 21920953,
+    "query": "src = 'PL:urban' AND maxspeed = '70'"
+  },
+  "rural_100": {
+    "osm_id": 27150435,
+    "query": "src = 'PL:rural' AND maxspeed = '100'"
+  },
+  "zone40_30": {
+    "osm_id": 111856373,
+    "query": "src = 'PL:zone40' AND maxspeed = '30'"
+  },
+  "source_sign": {
+    "osm_id": 4757979,
+    "query": "src = 'sign' AND maxspeed IS NOT NULL"
+  },
+  "type_rural_50": {
+    "osm_id": 135095251,
+    "query": "typ = 'PL:rural' AND maxspeed = '50'"
+  },
+  "sign_equal": {
+    "sign_id": "1009182420826232",
+    "query": "SELECT id FROM one WHERE TRY_CAST(maxspeed AS INT) = v AND fwd IS NULL AND bwd IS NULL"
+  },
+  "sign_differ_fresh": {
+    "sign_id": "1042247297698500",
+    "query": "SELECT id FROM one WHERE TRY_CAST(maxspeed AS INT) <> v AND fwd IS NULL AND bwd IS NULL AND cond IS NULL AND var IS NULL AND coalesce(bridge,'no') = 'no' AND coalesce(tunnel,'no') = 'no' AND last_seen_at >= edited"
+  },
+  "sign_differ_stale": {
+    "sign_id": "10032945853452691",
+    "query": "SELECT id FROM one WHERE TRY_CAST(maxspeed AS INT) <> v AND fwd IS NULL AND bwd IS NULL AND cond IS NULL AND var IS NULL AND coalesce(bridge,'no') = 'no' AND coalesce(tunnel,'no') = 'no' AND last_seen_at < edited"
+  },
+  "sign_multi_two_roads": {
+    "sign_id": "1002528968512774",
+    "query": "SELECT id FROM elig GROUP BY id HAVING count(*) = 2"
+  },
+  "sign_service_only": {
+    "sign_id": "1002363373868199",
+    "query": "SELECT id FROM a GROUP BY id HAVING count(*) FILTER (WHERE highway <> 'service') = 0"
+  },
+  "sign_directional": {
+    "sign_id": "1067368908321588",
+    "query": "SELECT id FROM one WHERE fwd IS NOT NULL OR bwd IS NOT NULL"
+  },
+  "sign_road_no_limit": {
+    "sign_id": "1018278936185808",
+    "query": "SELECT id FROM one WHERE maxspeed IS NULL AND fwd IS NULL AND bwd IS NULL AND cond IS NULL"
+  }
+}
