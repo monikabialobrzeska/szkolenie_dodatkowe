@@ -40,6 +40,15 @@ course-materials/    Notes, scripts, examples, research
 3. Confirm the actual application checkout and inspect source, build descriptors, call sites and dependencies before proposing commands or APIs. Identify build, test and startup commands from that project, using its wrapper when available; do not assume a framework, build tool or runtime version.
 4. Establish missing or ambiguous requirements with the user and record agreed application scope in its PRD before implementation. Routine course-document changes do not need an application PRD or ADR.
 
+### Looking up documentation
+Do not rely on memory for commands, options or APIs. Use these sources in order and stop at the first that answers the question:
+
+1. **CLI tools first: `--help`.** For any command-line tool (`uv`, `git`, `databricks`, `duckdb`, `pytest`, `claude`, `codex`, `gh`, this project's own CLI), run `<tool> --help` or `<tool> <subcommand> --help` before using an option. The installed version is the source of truth.
+2. **Libraries, SDKs and APIs: Context7.** Use the Context7 MCP (`resolve-library-id`, then `query-docs`) for the version pinned in the project. Record the library ID you used.
+3. **Web search only if Context7 has no answer.** Prefer official documentation, changelogs and repositories. Note the URL and the date in your summary.
+
+If sources disagree, the installed version wins (`--help`, `uv pip show <pkg>`, `help()` in Python). If no source confirms a detail, say so and ask instead of guessing.
+
 ### TDD Rules
 For every feature and bug fix:
 1. Start from the specification, not the existing implementation.
