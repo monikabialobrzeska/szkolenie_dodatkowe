@@ -30,7 +30,7 @@
   .filters label { display: flex; flex-direction: column; font-size: 11px; color: var(--muted); gap: 2px; }
   .filters select { font: inherit; padding: 3px 4px; min-width: 120px; }
   #count { margin-left: auto; font-size: 12px; color: var(--muted); }
-  #tablewrap { flex: 1 1 50%; overflow: auto; min-height: 120px; }
+  #tablewrap { flex: 1 1 40%; overflow: auto; min-height: 120px; }
   table.queue { border-collapse: collapse; width: 100%; font-size: 12px; }
   table.queue th { position: sticky; top: 0; background: #eef1f5; text-align: left; padding: 5px 6px; border-bottom: 1px solid var(--line); }
   table.queue td { padding: 4px 6px; border-bottom: 1px solid #eef0f3; white-space: nowrap; }
@@ -41,7 +41,7 @@
   .badge.conflict { background: var(--conflict); }
   .badge.needs_review { background: var(--review); }
   .empty { padding: 16px; color: var(--muted); }
-  #detail { flex: 0 0 auto; max-height: 48%; overflow: auto; border-top: 2px solid var(--line); padding: 10px 12px; }
+  #detail { flex: 0 0 auto; max-height: 58%; overflow: auto; border-top: 2px solid var(--line); padding: 10px 12px; }
   #detail h2 { font-size: 15px; margin: 0 0 4px; word-break: break-all; }
   #detail .why { background: #fff8e8; border-left: 3px solid var(--review); padding: 6px 8px; margin: 6px 0; }
   #detail .why.conflict { background: #fdecec; border-left-color: var(--conflict); }
@@ -140,8 +140,9 @@
   fillSelect("f-class", Object.keys(byClass).sort());
 
   // ---------- map ----------
-  let map = null, layer = null;
+  let map = null, layer = null, context = null;
   const layersById = {};
+  const ROADS = DATA.roads || {};
   if (window.L) {
     map = L.map("map", { preferCanvas: true }).setView([50.05, 19.95], 11);
     const tiles = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -227,11 +228,24 @@
     $("prev").onclick = () => idx > 0 && select(filtered[idx - 1].candidate_id, true);
     $("next").onclick = () => idx < filtered.length - 1 && select(filtered[idx + 1].candidate_id, true);
     const l = layersById[id];
-    if (map && l) {
-      if (l.getBounds) map.fitBounds(l.getBounds(), { maxZoom: 18, padding: [40, 40] });
-      else map.setView(l.getLatLng(), 18);
-      if (l.setStyle) { layer.resetStyle(); l.setStyle({ weight: 8, color: "#1f5fbf" }); }
-      if (l.bringToFront) l.bringToFront();
+    if (map) {
+      if (context) { context.remove(); context = null; }
+      // the OSM way(s) a sign was compared with, dashed blue (PRD 9.3)
+      const ways = c.type === "sign_road" ? list(c.osm_ids).filter((w) => ROADS[w]) : [];
+      if (ways.length) {
+        context = L.geoJSON({ type: "FeatureCollection", features: ways.map((w) => ({ type: "Feature", geometry: ROADS[w], properties: { w } })) },
+          { style: { color: "#1f5fbf", weight: 5, opacity: 0.9, dashArray: "8 6" },
+            onEachFeature: (f, fl) => fl.bindTooltip(`OSM way ${f.properties.w}`) }).addTo(map);
+      }
+      if (layer) layer.resetStyle();
+      if (l) {
+        if (l.setStyle) l.setStyle({ weight: 8, color: "#1f5fbf", fillColor: "#1f5fbf" });
+        if (l.bringToFront) l.bringToFront();
+        const bounds = context ? context.getBounds() : null;
+        if (l.getBounds) { const b = l.getBounds(); map.fitBounds(bounds ? b.extend(bounds) : b, { maxZoom: 18, padding: [40, 40] }); }
+        else if (bounds) map.fitBounds(bounds.extend(l.getLatLng()), { maxZoom: 18, padding: [40, 40] });
+        else map.setView(l.getLatLng(), 18);
+      }
     }
   }
 

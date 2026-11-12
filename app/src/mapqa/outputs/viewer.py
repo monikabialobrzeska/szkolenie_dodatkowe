@@ -46,16 +46,45 @@ def photo_lookup(photos: pd.DataFrame | None, photo_ids: set[str], data_dir: Pat
     return out
 
 
+def _ids(value: Any) -> list[str]:
+    if not value:
+        return []
+    return [str(v) for v in value] if isinstance(value, list) else str(value).split(";")
+
+
+def road_geometries(data_dir: Path, osm_ids: set[str]) -> dict[str, Any]:
+    """GeoJSON (EPSG:4326, 7 decimals) of the OSM ways that sign candidates refer to (PRD 9.3). Read-only."""
+    if not osm_ids:
+        return {}
+    import duckdb
+
+    con = duckdb.connect()
+    con.execute("LOAD spatial")
+    rows = con.execute(
+        "SELECT osm_id, ST_AsGeoJSON(geometry) FROM read_parquet(?) WHERE list_contains(?, osm_id) ORDER BY osm_id",
+        [str(data_dir / "osm_roads.parquet"), sorted(int(i) for i in osm_ids)],
+    ).fetchall()
+    out = {}
+    for osm_id, text in rows:
+        geometry = json.loads(text)
+        geometry["coordinates"] = [[round(x, 7), round(y, 7)] for x, y, *_ in geometry["coordinates"]]
+        out[str(osm_id)] = geometry
+    return out
+
+
 def build_viewer_data(summary: dict[str, Any], records: list[dict[str, Any]], photos: pd.DataFrame | None,
                       data_dir: Path) -> dict[str, Any]:
     referenced: set[str] = set()
+    sign_ways: set[str] = set()
     for rec in records:
-        ids = rec.get("photo_ids") or []
-        referenced.update(ids if isinstance(ids, list) else str(ids).split(";"))
+        referenced.update(_ids(rec.get("photo_ids")))
+        if rec.get("type") == "sign_road":
+            sign_ways.update(_ids(rec.get("osm_ids")))
     return {
         "summary": {key: summary[key] for key in ("source", "snapshot", "inputs", "counts", "config", "run_at")},
         "candidates": records,
         "photos": photo_lookup(photos, referenced, data_dir),
+        "roads": road_geometries(data_dir, sign_ways) if (data_dir / "osm_roads.parquet").is_file() else {},
     }
 
 

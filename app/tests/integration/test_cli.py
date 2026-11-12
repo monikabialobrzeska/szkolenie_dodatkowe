@@ -90,6 +90,10 @@ def test_full_run_outputs_and_counts(full_run):
 
     viewer = (out / "viewer.html").read_text(encoding="utf-8")
     assert viewer.count('"candidate_id"') == len(rows)  # TAC-003-02
+    payload = json.loads(viewer.split('id="mapqa-data">', 1)[1].split("</script>", 1)[0])
+    sign_ways = {w for r in rows if r["type"] == "sign_road" for w in r["osm_ids"].split(";")}
+    assert sign_ways <= set(payload["roads"])  # PRD 9.3: the road a sign is compared with is drawable
+    assert payload["roads"][next(iter(sign_ways))]["type"] == "LineString"
 
 
 def test_second_run_is_byte_identical(full_run, tmp_path):
@@ -157,4 +161,6 @@ def test_view_regenerates_viewer(full_run):
     (out / "viewer.html").unlink()
     result = mapqa("view", "--output-dir", str(out), "--no-open")
     assert result.returncode == 0, result.stderr
-    assert (out / "viewer.html").is_file()
+    viewer = (out / "viewer.html").read_text(encoding="utf-8")
+    payload = json.loads(viewer.split('id="mapqa-data">', 1)[1].split("</script>", 1)[0])
+    assert payload["roads"] and payload["candidates"]
