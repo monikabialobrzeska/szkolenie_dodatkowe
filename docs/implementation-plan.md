@@ -19,13 +19,13 @@ Phases are ordered by dependency: each phase only uses what earlier phases deliv
 |---|---|---|---|---|---|---|
 | P0 | Scope & docs | must | — | PRD/ADR updates, ADR-003 viewer, this plan | docs committed | ✅ `e240dbc` |
 | P1 | Scaffold + rule core | must | P0 | uv project `app/`, real-data fixtures, `interpret`, 4 checks, ranking/IDs | 6 ADR-002 unit cases green | ✅ `1a73561` |
-| P2 | Config + files adapter | must | P1 | `config.py` (TOML, precedence, strict/secret keys), `sources/` (`FilesSource`: check, checksums, load with `ST_AsWKB`, timestamps, bbox) | `check-source` works on the snapshot; config error tests green | in progress |
-| P3 | Pipeline + CLI `run` | must | P2 | `evidence.py`, `pipeline.py`, `outputs/` (CSV, GeoJSON, `summary.md`, `run_summary.json`, atomic write, `last_failed_run.json`), `cli.py` (`run`, `check-source`, exit codes 0–4), `__main__.py` | integration tests green: counts, determinism, input checksums, missing input → 3, Stage 2 sources → 4; TAC-002-04 ranges | |
-| P4 | Viewer | must | P3 | `outputs/viewer.py` + template (Leaflet 1.9.4, embedded JSON, filters, detail, photos, attribution), `mapqa view`, `run` writes `viewer.html` | unit render test + view integration tests green | |
-| P5 | Full verification | must | P4 | full `uv run pytest`, timing of a full run, warnings fixed | all tests green, no new warnings, full run < 3 min (TAC-02) | |
-| P6 | Manual QA | must | P5 | real `mapqa run` + `mapqa view`; Playwright (msedge) screenshots: initial page, filtered table, empty filter, candidate detail; console errors checked; spot-check 5 candidates against data | screenshots in `reports/map-qa/qa/`, no console errors, UI English, attribution visible | |
-| P7 | Project docs | should | P6 | `app/README.md` (install, commands, outputs, exit codes), `app/mapqa.example.toml`, scoped `app/AGENTS.md`, ADR notes for any deviation found during implementation | docs consistent with behaviour (`--help` matches README) | |
-| P8 | Wrap-up | must | P7 | final commit(s), push to `mine/map-app-implementation`, summary with QA evidence | branch pushed, working tree clean except `.env.example` | |
+| P2 | Config + files adapter | must | P1 | `config.py` (TOML, precedence, strict/secret keys), `sources/` (`FilesSource`: check, checksums, load with `ST_AsWKB`, timestamps, bbox) | `check-source` works on the snapshot; config error tests green | ✅ `8544b06` (with P3–P4: pipeline imports the viewer) |
+| P3 | Pipeline + CLI `run` | must | P2 | `evidence.py`, `pipeline.py`, `outputs/` (CSV, GeoJSON, `summary.md`, `run_summary.json`, atomic write, `last_failed_run.json`), `cli.py` (`run`, `check-source`, exit codes 0–4), `__main__.py` | integration tests green: counts, determinism, input checksums, missing input → 3, Stage 2 sources → 4; TAC-002-04 ranges | ✅ `8544b06` |
+| P4 | Viewer | must | P3 | `outputs/viewer.py` + template (Leaflet 1.9.4, embedded JSON, filters, detail, photos, attribution), `mapqa view`, `run` writes `viewer.html` | unit render test + view integration tests green | ✅ `8544b06` |
+| P5 | Full verification | must | P4 | full `uv run pytest`, timing of a full run, warnings fixed | all tests green, no new warnings, full run < 3 min (TAC-02) | ✅ 55 passed, run 52 s |
+| P6 | Manual QA | must | P5 | real `mapqa run` + `mapqa view`; Playwright (msedge) screenshots: initial page, filtered table, empty filter, candidate detail; console errors checked; spot-check 5 candidates against data | screenshots in `reports/map-qa/qa/`, no console errors, UI English, attribution visible | ✅ `bd7ed13` (found + fixed: sign detail lacked the compared OSM way) |
+| P7 | Project docs | should | P6 | `app/README.md` (install, commands, outputs, exit codes), `app/mapqa.example.toml`, scoped `app/AGENTS.md`, ADR notes for any deviation found during implementation | docs consistent with behaviour (`--help` matches README) | ✅ |
+| P8 | Wrap-up | must | P7 | final commit(s), push to `mine/map-app-implementation`, summary with QA evidence | branch pushed, working tree clean except `.env.example` | ✅ |
 
 ### Priority order if time runs short
 

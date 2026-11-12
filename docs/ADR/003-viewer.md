@@ -39,11 +39,15 @@ No Context7 IDs (Context7 unavailable, see ADR-000 §2).
 
 ### Data embedded in the page
 
-One JSON object inside `<script type="application/json" id="mapqa-data">` (with `<` escaped as `<`):
+One JSON object inside `<script type="application/json" id="mapqa-data">`, with every `<`, `>` and `&` written as a JSON unicode escape (backslash + `u003c`, `u003e`, `u0026`) so data can never close the script element:
 
 - `summary`: source, location, read time, snapshot ids, rows read, counts by type × state, by road class, skipped/unmatched, distance limit, attribution lines.
 - `candidates`: the review-queue rows (all CSV columns) plus `geometry` (GeoJSON, EPSG:4326).
 - `photos`: for every `photo_id` referenced by a candidate — `captured_at`, `author`, `license`, `source_url`, and `thumb` = relative path to `<data_dir>/offline/<filename>` when that file exists, otherwise null.
+
+- `roads` (added during manual QA, 2026-11-12): GeoJSON of every OSM way referenced by a `sign_road` candidate, read from `osm_roads.parquet`, so the detail map shows the way the sign was compared with (dashed blue) — the queue itself stores only the sign point.
+
+`mapqa view` rebuilds `photos` and `roads` from the read-only data folder recorded in `run_summary.json` (`config.data_dir`); if that folder is gone, the page still renders without photo metadata and road context.
 
 The page works from `file://` with no fetch calls. Only Leaflet and tiles need the network; without network the table, detail and summary still work and the map area states "Map tiles unavailable".
 

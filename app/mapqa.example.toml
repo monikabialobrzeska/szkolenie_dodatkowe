@@ -1,0 +1,32 @@
+# mapqa configuration example (ADR-001 §3). Copy to app/mapqa.toml (git-ignored) and adjust.
+# Relative paths are resolved against the folder of this file.
+# Precedence: command-line option > environment variable > this file > built-in default.
+# Never put tokens or passwords here — secrets live only in environment variables.
+
+[source]
+# files | databricks | public_api   (only "files" is implemented in Stage 1)
+kind = "files"
+
+[source.files]
+data_dir = "../course-materials/exercise-data/map-qa"
+
+[source.databricks]
+# Stage 2 only. The token is read from DATABRICKS_TOKEN, never from this file.
+# host = "https://<workspace>.cloud.databricks.com"
+# warehouse_id = "97c455ee6fb1fcb9"
+schema = "workspace.map_qa"
+
+[area]
+# WGS84 bbox [min_lon, min_lat, max_lon, max_lat]; signs outside are skipped (roads are kept whole)
+bbox = [19.80, 49.95, 20.15, 50.15]
+
+[checks]
+# sign-to-road distance limit in metres (1-100)
+sign_road_distance_m = 20.0
+# OSM highway classes for the "missing limit" check
+main_road_classes = ["motorway", "motorway_link", "trunk", "trunk_link", "primary", "primary_link", "secondary", "secondary_link"]
+# OSM highway classes ignored when associating signs with roads
+association_excluded_classes = ["service"]
+
+[output]
+dir = "../reports/map-qa/stage1"

@@ -151,6 +151,8 @@ For every road (any class) with a numeric `maxspeed` (kind numeric, value from t
 
 Not evaluated in Stage 1: directional variants (`source:maxspeed:forward`/`:backward`, `maxspeed:type:forward`/`:backward`), roads without a plain `maxspeed` (1,450 roads carry only an implicit source — they are informative, not contradictory), and disagreement between `source:maxspeed` and `maxspeed:type` themselves (5 roads; shown as evidence). Expected on the pinned snapshot: 161 roads, 102 of them on main roads.
 
+`diff_kmh` (used for ranking, AC-19) = the smallest absolute difference between `maxspeed` and any allowed value of the violated categories (e.g. `PL:urban` + 70 → 20). Added during implementation, 2026-11-12. `implicit_source_unrecognised` counts roads whose source value is not a category (2,384 on the pinned snapshot, mostly `sign`).
+
 ### 6.5 Reason codes and explanations
 
 Explanations are fixed English templates; placeholders are filled from the candidate. Wording never says "error" (PRD §11).

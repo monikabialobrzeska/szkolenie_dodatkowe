@@ -1,60 +1,65 @@
-# App
+# mapqa — wyszukiwarka konfliktów ograniczeń prędkości (Kraków, Stage 1)
 
-This folder will contain the application built during the course.
+Narzędzie CLI w Pythonie, które porównuje ograniczenia prędkości w OSM ze znakami Mapillary i ze spójnością tagów OSM, a następnie tworzy uporządkowaną **kolejkę kandydatów do ręcznego przeglądu** oraz przeglądarkę wyników (mapa + tabela). Narzędzie nigdy nie twierdzi, że mapa jest błędna — wskazuje miejsca do sprawdzenia.
 
-## How to start
+Specyfikacja: [`docs/PRD.md`](../docs/PRD.md), [`docs/mvp-scope.md`](../docs/mvp-scope.md), [`docs/ADR/`](../docs/ADR/), profil danych [`reports/map-qa/profile.md`](../reports/map-qa/profile.md), plan [`docs/implementation-plan.md`](../docs/implementation-plan.md).
 
-The app is scaffolded live during the course through a structured process:
+## Wymagania
 
-1. **Research** — use agents to research and validate the project idea
-2. **PRD** — generate a Product Requirements Document (`../docs/PRD.md`)
-3. **ADR** — generate Architecture Decision Records (`../docs/ADR/`) to choose the tech stack
-4. **Scaffold** — use the chosen boilerplate (`create-next-app`, AI SDK starter, Mastra, etc.)
-5. **Implement** — build features with agents using TDD
+- Windows / macOS / Linux, [uv](https://docs.astral.sh/uv/) (instaluje Python 3.12 dla projektu; systemowy Python nie jest używany).
+- Rozszerzenie DuckDB `spatial` — instaluje się jednorazowo przy pierwszym użyciu z dostępem do internetu.
+- Przeglądarka Chrome lub Edge do `viewer.html` (mapa wymaga internetu do kafelków i biblioteki Leaflet; tabela i szczegóły działają offline).
 
-## Checklist
+## Szybki start (z katalogu `app/`)
 
-Use this checklist during scaffolding. Some items are provided by the boilerplate (e.g. `create-next-app` ships `tsconfig.json`, ESLint config). Others you add explicitly.
+```powershell
+uv sync                         # zależności z uv.lock
+uv run mapqa check-source       # czy wszystkie 6 plików wejściowych jest dostępnych
+uv run mapqa run                # pełny przebieg (~1 min), wyniki w reports/map-qa/stage1/
+uv run mapqa view               # otwiera viewer.html w przeglądarce
+```
 
-### Project setup
-- [ ] Choose framework (Next.js, Express+Vite, Mastra, other) — record in ADR
-- [ ] Initialize project (e.g. `npx create-next-app@latest` or equivalent)
-- [ ] TypeScript config (`tsconfig.json`)
-- [ ] Package manager chosen (npm / pnpm / bun)
+## Polecenia
 
-### Code quality
-- [ ] ESLint config (`eslint.config.js`)
-- [ ] Prettier config (`.prettierrc`, `.prettierignore`)
-- [ ] `.editorconfig` (optional but recommended)
+| Polecenie | Co robi |
+|---|---|
+| `mapqa run [--config] [--source] [--data-dir] [--output-dir] [--distance-m]` | Uruchamia wszystkie sprawdzenia i zapisuje wyniki atomowo (przy błędzie stare wyniki zostają nietknięte). |
+| `mapqa check-source [--config] [--source] [--data-dir]` | Sprawdza źródło i wymagane kolumny bez uruchamiania sprawdzeń. |
+| `mapqa view [--output-dir] [--no-open]` | Odtwarza `viewer.html` z ostatniego przebiegu i otwiera go. |
 
-### Testing
-- [ ] Unit/integration test runner (Vitest / Jest)
-- [ ] E2E test runner (Playwright)
-- [ ] Test setup file (e.g. `test-setup.ts` with Testing Library matchers)
+Źródła danych: `files` (zaimplementowane), `databricks` i `public_api` (rozpoznawane, kończą się kodem 4 „not available yet”). Kolejność ustawień: opcja CLI → zmienna `MAPQA_DATA_SOURCE` / `MAPQA_CONFIG` → plik TOML → domyślne. Przykład konfiguracji: [`mapqa.example.toml`](mapqa.example.toml) (skopiuj do `app/mapqa.toml`, plik jest ignorowany przez git). Sekrety tylko w zmiennych środowiskowych — klucz wyglądający na sekret w TOML kończy się kodem 2.
 
-### Environment
-- [ ] `.env.example` with required env vars (API keys, ports)
-- [ ] `.env` created locally (gitignored)
-- [ ] `.gitignore` (node_modules, .env, build output, etc.)
+**Kody wyjścia:** 0 sukces · 1 błąd wewnętrzny · 2 konfiguracja/opcje · 3 brak lub nieczytelne wejście (albo brak wyników dla `view`) · 4 źródło niedostępne.
 
-### AI integration
-- [ ] Vercel AI SDK (`ai` package) or equivalent
-- [ ] API route / endpoint for chat
-- [ ] Model configuration (provider, model name, API key from env)
+## Wyniki (`reports/map-qa/stage1/`)
 
-### Design
-- [ ] Design tokens (`../assets/design-tokens.json`)
-- [ ] Tailwind CSS or equivalent
-- [ ] Logo and favicon (`../assets/`)
-- [ ] Design system doc (`../docs/design-guidelines.md`)
+| Plik | Dla kogo | Zawartość |
+|---|---|---|
+| `review_queue.csv` | analityk, arkusz | kandydaci w kolejności rangi, wartości surowe i zinterpretowane, dystans, daty znaku, zdjęcia |
+| `review_queue.geojson` | QGIS | to samo z geometrią (punkt znaku lub linia drogi), EPSG:4326 |
+| `viewer.html` | analityk | mapa + filtrowana tabela + szczegóły kandydata (droga OSM porównana ze znakiem, zdjęcia, linki) |
+| `summary.md` | lider zespołu | liczności wg typu × stanu, powodu, klasy drogi, pominięte rekordy, ustawienia, atrybucja |
+| `run_summary.json` | agent / automatyzacja | źródło, konfiguracja, liczności wejść, SHA-256 przed/po, liczności wyników |
 
-### Documentation
-- [ ] PRD (`../docs/PRD.md`)
-- [ ] ADRs (`../docs/ADR/`)
-- [ ] AGENTS.md in `app/` with stack-specific rules
+Kolejka i GeoJSON są deterministyczne: dwa przebiegi na tych samych danych dają identyczne bajty.
 
-## Notes
+## Sprawdzenia (ADR-002)
 
-- Don't create config files manually if the boilerplate provides them — it leads to conflicts.
-- Let the agent research and recommend the right boilerplate based on the ADR decisions.
-- Keep this folder organized: separate routes, components, domain logic, and tests.
+| Typ | Stan | Co wykrywa |
+|---|---|---|
+| `missing_limit` | conflict | droga główna (motorway…secondary + łączniki) bez żadnego `maxspeed*` |
+| `tag_inconsistency` | conflict | `source:maxspeed` / `maxspeed:type` (np. `PL:urban`) nie dopuszcza wartości `maxspeed` |
+| `sign_road` | needs_review | znak Mapillary w promieniu 20 m od drogi z inną wartością; powody: `multiple_candidate_roads`, `bridge_or_tunnel`, `variable_limit`, `conditional_limit`, `stale_sign`, `unparseable_value`, `road_limit_missing`, `direction_unknown`, `sign_road_mismatch` |
+| `unparseable_value` | needs_review | wartość `maxspeed*`, której nie da się zinterpretować |
+
+Wynik na przypiętym snapshocie (2026-11-12): 1896 kandydatów — 290 `missing_limit`, 161 `tag_inconsistency`, 1445 `sign_road` (w tym 1205 niejednoznacznych, 182 `stale_sign`).
+
+## Testy
+
+```powershell
+uv run pytest -m "not integration"   # testy jednostkowe (~1 s)
+uv run pytest                        # wszystko, w tym prawdziwe CLI na pełnym snapshocie (~2,5 min)
+uv run python tests/fixtures/build_fixtures.py   # odtworzenie fixtures z prawdziwych danych
+```
+
+Licencje danych i atrybucja: [`course-materials/exercise-data/map-qa/ATTRIBUTION.md`](../course-materials/exercise-data/map-qa/ATTRIBUTION.md).
