@@ -159,7 +159,7 @@ Phase 2 starts only after the MVP acceptance criteria pass. It uses the sign pho
 
 - **AC-29** The model receives only a neutral question text and the image crop. File names, photo identifiers, reference labels, Mapillary values and OSM/Overture attributes are never sent to the model.
 - **AC-30** The model's answer is one of: a speed value in km/h of a round B-33 speed-limit sign, `none` (no such sign in the crop, including zone and end-of-limit signs), or `unreadable`, together with a probability.
-- **AC-31** A hard limit of **25 model calls per run** applies to both model tiers combined, counting the first call, failed calls and errors. When the limit is reached, no further calls are made; items not yet resolved go to the manual review queue with reason `budget_exhausted`, and the report states their number.
+- **AC-31** *(Revised 2026-11-13: per model.)* A hard limit of **25 calls per model per run** applies (three models in the pilot, so at most 75 calls), counting the first call, failed calls and errors. When the limit is reached, no further calls are made; items not yet resolved go to the manual review queue with reason `budget_exhausted`, and the report states their number.
 - **AC-32** There are no automatic retries. Each call has a 40-second timeout. After the first API error, the paid loop stops; the error is recorded as `model_unavailable`, never as a reading.
 - **AC-33** Before the first paid call, the system shows the sample manifest (which crops, how many calls) and waits for explicit user confirmation.
 - **AC-34** Results are cached: re-running on the same crop and question makes no new call and does not count against the limit.
@@ -340,9 +340,11 @@ The automated decision rules must follow these constraints:
 - All four conflict types are in the MVP. *(Superseded 2026-11-12: OSM vs Overture deferred — `mvp-scope.md` §1.2; tag inconsistency added — AC-17a.)*
 - Ambiguous cases: separate `needs_review` state with reason.
 - No AI in the MVP; model reading of sign crops specified as Phase 2.
-- Phase 2 budget: max 25 model calls per run including errors, no retries, 40 s timeout.
+- Phase 2 budget: max 25 model calls per run including errors, no retries, 40 s timeout. *(Revised 2026-11-13: 25 calls **per model** — AC-31.)*
 - Data sources: configurable — local files, Databricks tables, public APIs; one source per run; on failure stop with a clear error (no automatic fallback).
 - Phase 2 escalation: decision model → general LLM with medium reasoning (only when tier 1 abstains) → human manual queue (only when tier 2 is also unresolved).
+- **Models (2026-11-13, trainer):** decision model `typesafe/jev-1.14`; alternative decision model `openai/gpt-6-luna-decisions`; general LLM `openai/gpt-6-luna` (all via OpenRouter, image input; verified in the OpenRouter models API on 2026-11-13).
+- **Pilot design (2026-11-13, user):** first a **side-by-side comparison** — all three models read the same crops (accuracy, coverage, negatives vs the Mapillary detector baseline) — then the **escalation chain** with the better decision model as tier 1 and Luna as tier 2.
 - Photos: all linked photos are shown per candidate.
 - Uncertain results (`needs_review`, `unsure`, abstentions): separate queue section and separate counts; `unsure` stays open for a second review.
 - Ranking: road importance, then size of the difference.
@@ -361,8 +363,8 @@ The automated decision rules must follow these constraints:
 4. Where verdicts are stored so they can be shared between two analysts later (out of scope now, but affects the storage choice).
 5. Should `tertiary` roads also count for "missing limit" if the number of candidates stays manageable?
 6. Phase 2: abstention threshold value and the probability source to use (to be set on a validation split before the final test).
-7. Phase 2: who approves the budget before the first paid call (trainer allocation).
-8. Phase 2: should the 25-call limit be split between tiers (e.g. a reserved number of tier-2 calls), or stay shared as now (AC-31)?
+7. Phase 2: who approves the budget before the first paid call (trainer allocation). *(Resolved 2026-11-13: the user confirms the sample manifest before the first paid call, AC-33; trainer provided `OPENROUTER_API_KEY` and the model list.)*
+8. ~~Phase 2: should the 25-call limit be split between tiers?~~ — resolved 2026-11-13: 25 calls per model (AC-31).
 9. Phase 2: how the tier-2 LLM signals uncertainty — an explicit `uncertain` option, a self-reported confidence, or only `unreadable`? (General LLMs do not return calibrated probabilities; the ADR must define the rule used in AC-35b.)
 10. `public_api` source: the APIs do not provide photo-to-road links, and Mapillary photo URLs expire. Confirm that recomputing links and refreshing URLs per run is acceptable, and which request limits to set.
 11. Should the configuration also allow other warehouses later (e.g. PostGIS), or are the three sources enough for the course?

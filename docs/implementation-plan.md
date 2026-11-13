@@ -42,6 +42,23 @@ Definition of done for Stage 1 = ADR-000 §10 and ADR-003 §8 technical acceptan
 4. Viewer in a Databricks run: road geometries from the active adapter's `InputBundle`, not from local `osm_roads.parquet`; whether offline thumbnails are an allowed local presentation asset (otherwise PRD §7 "mixing sources" is violated).
 5. Keep the connection-settings order fixed in ADR-001 §3.3 (TOML, then `DATABRICKS_*` fallback; token only from the environment).
 
+## Stage 3 — model reading pilot (planned 2026-11-13)
+
+**Goal:** PRD AC-29–AC-40 and §12 "Models" / "Pilot design"; `mvp-scope.md` §2 items 11–13. A separate CLI command reads sign crops (`course-materials/exercise-data/map-qa/signs/`) with three OpenRouter models side by side, then runs the escalation chain, and writes an evaluation report with explicit denominators. Not wired into the review queue (AC-40 deferred).
+
+**Prerequisite:** `OPENROUTER_API_KEY` in the session's environment (presence + shape only). **No paid call without the user's explicit confirmation of the manifest (AC-33).**
+
+| # | Phase | Delivers | Exit criterion | Status |
+|---|---|---|---|---|
+| S3-0 | Access check | key present, shape ok; the three model ids resolve in the OpenRouter models API (free) | 3/3 models listed with image input | |
+| S3-1 | Discovery + real captures | after user confirmation: **one** call per model on one crop (3 paid calls, < $0.01) plus one free error case; verbatim captures in `app/tests/fixtures/openrouter/` (no key, no labels) — shape of "decisions" output and probabilities | captures token-checked; request/response format known | |
+| S3-2 | ADR-005 | request format per model, neutral question, answer schema (value / `none` / `unreadable` + probability), abstention threshold (fixed before evaluation), tier-2 uncertainty rule (PRD open question 9), cache key, budget counter, sample manifest (stratified, split by sequence), label isolation (AC-37) | ADR accepted | |
+| S3-3 | TDD: reader | client + tiers with fake transport from S3-1 captures: budget per model, no retries, 40 s timeout, cache, errors ≠ answers | unit tests green, no network | |
+| S3-4 | TDD: evaluator + report | metrics over `certain` labels with denominators, detector baseline, per-tier and end-to-end, side-by-side table | unit tests green | |
+| S3-5 | Pilot run | manifest shown → **user confirms** → Part A (3 × 20) and Part B (chain) | report written; calls ≤ 25 per model | |
+| S3-6 | QA + review | report checked against labels by hand on a few items; consistency review of PRD/ADR | evidence recorded | |
+| S3-7 | Docs | README, `app/AGENTS.md`, plan status | docs match `--help` | |
+
 ## Out of scope
 
 Stage 1 and Stage 2: `public_api`, writing to Databricks, Databricks MCP, mixing sources in one run, automatic fallback, verdict recording, OSM vs Overture check, model reading pilot (Stage 3), tertiary roads in `missing_limit`.
