@@ -9,6 +9,7 @@ import math
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
+from mapqa.pilot import image
 from mapqa.pilot.openrouter import Exchange, Transport
 
 DECISION_MODELS = ("typesafe/jev-1.14", "openai/gpt-6-luna-decisions")
@@ -57,6 +58,7 @@ class Reading:
     cached: bool = False
     cache_key: str | None = None
     error: str | None = None
+    sent_px: str | None = None
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -190,9 +192,10 @@ class Reader:
         return crops
 
     def read_one(self, model: str, item: Item, raw: bytes) -> Reading:
+        """`raw` is the prepared image (image.prepare); the cache key uses the hash of the bytes actually sent."""
         url = data_url(raw)
         path, body = build_request(model, url)
-        key = cache_key(path, body, url, item.crop_sha256)
+        key = cache_key(path, body, url, hashlib.sha256(raw).hexdigest())
         cached_file = self.cache_dir / f"{key}.json"
         if cached_file.exists():
             c = json.loads(cached_file.read_text(encoding="utf-8"))
@@ -213,16 +216,18 @@ class Reader:
         return reading
 
     def read_all(self, items: list[Item], data_dir: Path, models) -> list[Reading]:
-        crops = self.load_crops(items, data_dir)  # fail before any call
+        crops = {k: image.prepare(v) for k, v in self.load_crops(items, data_dir).items()}  # fail before any call
         readings = []
         for model in models:
             self.calls_made.setdefault(model, 0)
             for item in items:
                 reading = self.read_one(model, item, crops[item.item_id])
+                reading.sent_px = image.size_of(crops[item.item_id])
                 log = {"run_id": self.run_id, "model": model, "item_id": item.item_id,
                        "cache_key": reading.cache_key, "cached": reading.cached, "status": reading.status,
                        "http_status": reading.http_status, "elapsed_s": reading.elapsed_s,
-                       "generation_id": reading.generation_id, "cost_usd": reading.cost_usd, "error": reading.error}
+                       "generation_id": reading.generation_id, "cost_usd": reading.cost_usd, "error": reading.error,
+                       "sent_px": reading.sent_px}
                 self._write(self.log_path, json.dumps(log, ensure_ascii=False) + "\n", append=True)
                 readings.append(reading)
         return readings

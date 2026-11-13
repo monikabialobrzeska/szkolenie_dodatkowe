@@ -12,6 +12,7 @@ from pathlib import Path
 import pandas as pd
 
 from mapqa.config import DEFAULT_DATA_DIR, REPO_ROOT
+from mapqa.pilot import image
 from mapqa.pilot.evaluate import evaluate
 from mapqa.pilot.openrouter import ApiKeyError, HttpTransport, api_key_from_env
 from mapqa.pilot.reader import BUDGET_PER_MODEL, MODELS, THRESHOLD, Item, Reader
@@ -59,7 +60,8 @@ def cmd_plan(args) -> int:
     except (SampleError, ValueError) as exc:
         return _fail("plan", str(exc), 3)
     manifest = {"version": 1, "models": list(MODELS), "budget_per_model": BUDGET_PER_MODEL,
-                "calls_planned": len(items) * len(MODELS), "threshold": THRESHOLD, "items": items}
+                "calls_planned": len(items) * len(MODELS), "threshold": THRESHOLD, "image": image.SETTINGS,
+                "items": items}
     _write_json(out / "manifest.json", manifest)
     _write_json(out / "strata.json", strata)
     code = confirm_code(out / "manifest.json")
@@ -73,7 +75,8 @@ def cmd_plan(args) -> int:
     print(f"paid calls planned: {manifest['calls_planned']} ({len(items)} per model; budget {BUDGET_PER_MODEL} per model; "
           f"cache hits are free)")
     print(f"estimated upstream cost: ~${estimate:.4f} (S3-1 capture prices)")
-    print("sent to the models: crop bytes + neutral question only")
+    print(f"sent to the models: crop scaled to {image.MIN_SIDE}-{image.MAX_SIDE} px (same copy for all models) "
+          "+ neutral question only")
     print(f"confirm code: {code}")
     print(f"to start the paid run after review: mapqa pilot run --confirm {code}")
     return 0

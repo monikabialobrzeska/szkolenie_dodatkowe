@@ -6,14 +6,17 @@ The fake transport replays the real S3-1 captures in tests/fixtures/openrouter/.
 
 from __future__ import annotations
 
+import base64
 import copy
 import hashlib
+import io
 import json
 from pathlib import Path
 
 import pytest
+from PIL import Image
 
-from mapqa.pilot import chain
+from mapqa.pilot import chain, image
 from mapqa.pilot.openrouter import Exchange
 from mapqa.pilot.reader import (CHAT_MODEL, DECISION_MODELS, MODELS, Item, Reader, build_request, cache_key,
                                 parse)
@@ -38,12 +41,14 @@ class FakeTransport:
 
 @pytest.fixture()
 def crops(tmp_path) -> tuple[Path, list[Item]]:
-    """Three tiny synthetic 'crops' (bytes only matter for hashing)."""
+    """Three tiny synthetic JPEG crops (60x50 px, below the provider's minimum)."""
     root = tmp_path / "data"
     (root / "signs" / "crops").mkdir(parents=True)
     items = []
     for i in range(3):
-        raw = f"synthetic-jpeg-{i}".encode()  # synthetic
+        buf = io.BytesIO()
+        Image.new("RGB", (60, 50), (200, 40 * i, 40)).save(buf, "JPEG")  # synthetic
+        raw = buf.getvalue()
         rel = f"signs/crops/mapillary_{i}.jpg"
         (root / rel).write_bytes(raw)
         items.append(Item(item_id=f"mapillary_{i}", crop=rel, crop_sha256=hashlib.sha256(raw).hexdigest(),
@@ -293,3 +298,51 @@ def test_error_message_is_recorded_in_the_call_log(tmp_path, crops):
 def test_timeout_error_is_recorded():
     r = parse("typesafe/jev-1.14", Exchange(http_status=None, headers={}, body=None, elapsed_s=40.0, error="TimeoutError"))
     assert r["error"] == "TimeoutError"
+
+
+# --- image preparation (ADR-005 §4.2a, provider rejected 155x192 px: "Invalid image dimensions") -----------
+
+def _jpeg(w: int, h: int) -> bytes:
+    buf = io.BytesIO()
+    Image.new("RGB", (w, h), (180, 30, 30)).save(buf, "JPEG")  # synthetic
+    return buf.getvalue()
+
+
+def _size(raw: bytes) -> tuple[int, int]:
+    return Image.open(io.BytesIO(raw)).size
+
+
+@pytest.mark.parametrize("src,expected", [
+    ((155, 192), (320, 396)),     # the rejected crop: shorter side up to 320, aspect kept
+    ((54, 50), (346, 320)),
+    ((2048, 1152), (1600, 900)),  # whole frames: longer side capped at 1600
+])
+def test_prepare_scales_into_range(src, expected):
+    out = image.prepare(_jpeg(*src))
+    assert _size(out) == expected and out[:2] == bytes([0xFF, 0xD8])
+
+
+def test_prepare_keeps_an_image_already_in_range_byte_identical():
+    raw = _jpeg(400, 500)
+    assert image.prepare(raw) == raw
+
+
+def test_prepare_is_deterministic():
+    raw = _jpeg(100, 90)
+    assert image.prepare(raw) == image.prepare(raw)
+
+
+def test_reader_sends_the_prepared_image_to_every_model(tmp_path, crops):
+    root, items = crops
+    transport = FakeTransport()
+    make_reader(tmp_path, transport).read_all(items[:1], root, MODELS)
+    for _, body in transport.calls:
+        url = json.dumps(body).split("data:image/jpeg;base64,")[1].split('"')[0]
+        assert min(_size(base64.b64decode(url))) >= 320
+
+
+def test_call_log_records_sent_size(tmp_path, crops):
+    root, items = crops
+    make_reader(tmp_path, FakeTransport()).read_all(items[:1], root, ["typesafe/jev-1.14"])
+    rec = json.loads((tmp_path / "calls.jsonl").read_text(encoding="utf-8").splitlines()[0])
+    assert rec["sent_px"] == "384x320"

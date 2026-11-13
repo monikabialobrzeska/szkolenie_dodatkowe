@@ -68,6 +68,10 @@ Exactly the request bodies captured in S3-1 (`capture.py`): image as a base64 `d
 | `typesafe/jev-1.14`, `openai/gpt-6-luna-decisions` | `POST /api/alpha/decisions` | `state` = list with one `image_url` part; one `choice` question `speed_limit` with criteria per option |
 | `openai/gpt-6-luna` | `POST /api/v1/chat/completions` | text + image; `reasoning.effort = medium`; strict `json_schema` `{answer: enum, uncertain: boolean}` |
 
+### 4.2a Image preparation (added 2026-11-13 after the first pilot call, user decision)
+
+The first pilot call (Jev, crop 155×192 px) returned HTTP 400 `{"detail": {"error_type": "api_usage_error", "message": "Invalid image dimensions."}}` (no cost); the S3-1 crop of 311×308 px was accepted. The minimum is not documented. Every crop is therefore scaled before sending, **identically for all three models** (`pilot/image.py`): shorter side ≥ 320 px, longer side ≤ 1600 px (the cap wins), aspect ratio kept, Pillow 12.0.0 `LANCZOS`, JPEG quality 92; a crop already in range is sent byte-identical. Only the size changes. The settings are part of `manifest.json` (so of the confirmation code); the cache key uses the hash of the bytes actually sent; `calls.jsonl` records `sent_px` and, for errors, the API message (AC-36). New dependency: `pillow==12.0.0` (the version the crops were built with).
+
 Nothing else is sent: no file name, photo id, sequence, label, detector value or map attribute. A unit test asserts that the serialized body contains none of the manifest's identifiers.
 
 ### 4.3 Reading record
@@ -144,6 +148,7 @@ The threshold **0.7 is fixed here and not tuned** (PRD open question 6): a valid
 | Tier-2 uncertainty | explicit `uncertain` boolean in a strict schema | self-reported confidence number; only `unreadable` | matches the S3-1 capture; a boolean is unambiguous, LLM confidence numbers are uncalibrated |
 | Part B tier-2 calls | reuse Part A Luna readings (identical request) | separate calls | AC-34; saves up to 20 calls; the result is identical by construction |
 | Label isolation | the reader gets `manifest.json` only; test runs `pilot run` on a data dir without `labels.csv` | code review only | AC-37 checkable |
+| Small crops | scale all crops to 320–1600 px for every model | only crops ≥ 300 px; probe the minimum first | keeps the agreed sample; same input for all models (user, 2026-11-13) |
 | Confirmation | code = hash of the manifest | `y/N` prompt | binds consent to exactly this manifest; works for agents without a TTY |
 
 ## 7. Testing Strategy
