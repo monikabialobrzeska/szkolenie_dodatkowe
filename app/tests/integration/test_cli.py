@@ -22,9 +22,14 @@ INPUTS = ["osm_roads.parquet", "overture_segments.parquet", "photos.csv", "photo
 
 
 def mapqa(*args: str, env_extra: dict | None = None) -> subprocess.CompletedProcess:
+    """Run the real CLI. A None value in env_extra removes that variable."""
     env = {k: v for k, v in os.environ.items() if not k.startswith("MAPQA_")}
     env["PYTHONIOENCODING"] = "utf-8"
-    env.update(env_extra or {})
+    for key, value in (env_extra or {}).items():
+        if value is None:
+            env.pop(key, None)
+        else:
+            env[key] = value
     return subprocess.run([sys.executable, "-m", "mapqa", *args], capture_output=True, text=True,
                           encoding="utf-8", env=env, cwd=REPO_ROOT, timeout=600)
 
@@ -55,7 +60,8 @@ def test_help_lists_sources_and_exit_codes():
 def test_full_run_outputs_and_counts(full_run):
     result, out, before, after = full_run
     assert result.returncode == 0, result.stderr
-    for name in ("review_queue.csv", "review_queue.geojson", "summary.md", "run_summary.json", "viewer.html"):
+    for name in ("review_queue.csv", "review_queue.geojson", "summary.md", "run_summary.json", "viewer.html",
+                 "viewer_context.json"):
         assert (out / name).is_file(), name
     assert before == after  # AC-01
 
@@ -117,13 +123,16 @@ def test_missing_input_exits_3_without_queue(tmp_path):
     assert not (out / "review_queue.csv").exists()
 
 
-@pytest.mark.parametrize("source", ["databricks", "public_api"])
-def test_stage2_sources_exit_4(source, tmp_path):
+def test_unavailable_sources_exit_4(tmp_path):
+    no_databricks = {"DATABRICKS_HOST": None, "DATABRICKS_TOKEN": None, "DATABRICKS_SQL_WAREHOUSE_ID": None}
     for command in ("run", "check-source"):
-        args = [command, "--source", source] + (["--output-dir", str(tmp_path)] if command == "run" else [])
-        result = mapqa(*args)
-        assert result.returncode == 4, (command, result.stderr)
-        assert "not available yet" in result.stderr
+        out = ["--output-dir", str(tmp_path)] if command == "run" else []
+        result = mapqa(command, "--source", "public_api", *out)
+        assert result.returncode == 4 and "not available yet" in result.stderr, (command, result.stderr)
+        # databricks without credentials: source error naming the missing variable, never a fallback to files
+        result = mapqa(command, "--source", "databricks", *out, env_extra=no_databricks)
+        assert result.returncode == 4 and "missing DATABRICKS_" in result.stderr, (command, result.stderr)
+        assert not (tmp_path / "review_queue.csv").exists()
 
 
 def test_check_source_files_ok():

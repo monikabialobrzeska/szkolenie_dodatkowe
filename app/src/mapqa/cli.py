@@ -16,16 +16,17 @@ EXIT_CODES = """exit codes:
   1  unexpected internal problem (bug); traceback on stderr
   2  usage or configuration problem (bad option, invalid TOML, unknown or secret key)
   3  input problem: a required input is missing, unreadable or lacks columns; or no run results for `view`
-  4  source problem: source not available yet (databricks, public_api) or unreachable"""
+  4  source problem: source not available yet (public_api), unreachable, credentials missing or rejected"""
 
-DESCRIPTION = """Speed-limit conflict finder for Krakow map QA (Stage 1).
+DESCRIPTION = """Speed-limit conflict finder for Krakow map QA (Stages 1-2).
 
 Compares OSM speed limits with Mapillary speed-limit signs and OSM tags and writes a ranked
 review queue of candidates for human review. It never states that the map is wrong.
 
 data sources (--source, env MAPQA_DATA_SOURCE, config [source] kind; default files):
   files       local snapshot folder (implemented)
-  databricks  shared workspace.map_qa tables (Stage 2, not available yet)
+  databricks  shared workspace.map_qa tables, read-only (needs DATABRICKS_HOST, DATABRICKS_TOKEN,
+              DATABRICKS_SQL_WAREHOUSE_ID or [source.databricks] host/warehouse_id)
   public_api  Overture bucket, OSM extract, Mapillary/Panoramax APIs (not available yet)"""
 
 
@@ -124,8 +125,6 @@ def cmd_check_source(args) -> int:
 
 
 def cmd_view(args) -> int:
-    import pandas as pd
-
     from mapqa.config import DEFAULT_OUTPUT_DIR
     from mapqa.outputs.viewer import build_viewer_data, write_viewer
 
@@ -139,10 +138,11 @@ def cmd_view(args) -> int:
     except (OSError, ValueError, KeyError) as exc:
         return _fail("view", f"run results in {out_dir} are unreadable ({exc})", 3)
     records = [{**f["properties"], "geometry": f["geometry"]} for f in features]
-    data_dir = Path(summary["config"]["data_dir"])
-    photos = pd.read_csv(data_dir / "photos.csv", dtype={"photo_id": str}) if (data_dir / "photos.csv").is_file() else None
+    # only the output folder is read: no data folder, no remote source (ADR-004 §6)
+    context_path = out_dir / "viewer_context.json"
+    context = json.loads(context_path.read_text(encoding="utf-8")) if context_path.is_file() else {}
     path = out_dir / "viewer.html"
-    write_viewer(path, build_viewer_data(summary, records, photos, data_dir))
+    write_viewer(path, build_viewer_data(summary, records, context))
     print(f"viewer: {path}")
     if not args.no_open:
         webbrowser.open(path.as_uri())

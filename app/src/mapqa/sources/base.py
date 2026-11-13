@@ -48,6 +48,7 @@ class SourceAdapter(Protocol):
     kind: str
 
     def location(self) -> str: ...
+    def input_locations(self) -> dict[str, str]: ...
     def check(self) -> list[InputStatus]: ...
     def checksums(self) -> dict[str, str]: ...
     def load(self) -> InputBundle: ...
@@ -58,4 +59,8 @@ def adapter_for(config: RunConfig) -> SourceAdapter:
         from mapqa.sources.files import FilesSource
 
         return FilesSource(config)
-    raise SourceNotAvailable(f"source {config.source_kind}: not available yet in this version (Stage 2)")
+    if config.source_kind == "databricks":
+        from mapqa.sources.databricks import DatabricksSource
+
+        return DatabricksSource(config)
+    raise SourceNotAvailable(f"source {config.source_kind}: not available yet in this version")

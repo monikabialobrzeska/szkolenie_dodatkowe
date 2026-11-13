@@ -22,12 +22,12 @@ from mapqa.evidence import attach_photos
 from mapqa.interpret import interpret_road
 from mapqa.outputs.queue import to_records, write_csv, write_geojson
 from mapqa.outputs.report import write_summary
-from mapqa.outputs.viewer import build_viewer_data, write_viewer
+from mapqa.outputs.viewer import build_viewer_context, build_viewer_data, write_viewer
 from mapqa.ranking import rank_candidates
 from mapqa.sources.base import InputError, adapter_for
-from mapqa.sources.files import FILES
 
-OUTPUT_FILES = ("review_queue.csv", "review_queue.geojson", "summary.md", "run_summary.json", "viewer.html")
+OUTPUT_FILES = ("review_queue.csv", "review_queue.geojson", "summary.md", "run_summary.json", "viewer.html",
+                "viewer_context.json")
 
 
 class InputsChanged(Exception):
@@ -98,12 +98,16 @@ def run(config: RunConfig, command: str = "run") -> RunResult:
         write_csv(tmp / "review_queue.csv", records)
         write_geojson(tmp / "review_queue.geojson", records)
         after = adapter.checksums()
-        for name in FILES:
+        for name, location in adapter.input_locations().items():
+            sha_before = before[name][7:] if before[name].startswith("sha256:") else None
+            sha_after = after[name][7:] if after[name].startswith("sha256:") else None
             summary["inputs"][name] = {
-                "path": str(config.data_dir / FILES[name]),
+                "path": location,
                 "rows": bundle.row_counts.get(name),
-                "sha256_before": before[name],
-                "sha256_after": after[name],
+                "fingerprint_before": before[name],  # sha256:<hex> for files, delta-version:<n> for tables
+                "fingerprint_after": after[name],
+                "sha256_before": sha_before,
+                "sha256_after": sha_after,
             }
         if before != after:
             changed = ", ".join(n for n in before if before[n] != after[n])
@@ -111,7 +115,13 @@ def run(config: RunConfig, command: str = "run") -> RunResult:
         write_summary(tmp / "summary.md", summary, records)
         (tmp / "run_summary.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False) + "\n",
                                               encoding="utf-8", newline="\n")
-        write_viewer(tmp / "viewer.html", build_viewer_data(summary, records, bundle.photos, config.data_dir))
+        # viewer context comes from the active InputBundle only (ADR-004 §6: no source mixing);
+        # offline thumbnails belong to the files snapshot
+        context = build_viewer_context(records, bundle.roads, bundle.photos,
+                                       config.data_dir / "offline" if adapter.kind == "files" else None)
+        (tmp / "viewer_context.json").write_text(json.dumps(context, ensure_ascii=False, separators=(",", ":")) + "\n",
+                                                 encoding="utf-8", newline="\n")
+        write_viewer(tmp / "viewer.html", build_viewer_data(summary, records, context))
         out_dir.mkdir(parents=True, exist_ok=True)
         for name in OUTPUT_FILES:
             os.replace(tmp / name, out_dir / name)

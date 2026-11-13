@@ -28,5 +28,6 @@ dev = [
 testpaths = ["tests"]
 markers = [
     "integration: runs the real CLI on the pinned snapshot (slower)",
+    "databricks: needs the real Databricks warehouse (skipped when DATABRICKS_* variables are missing)",
 ]
 addopts = "-ra --strict-markers"
