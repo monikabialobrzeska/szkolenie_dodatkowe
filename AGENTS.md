@@ -6,12 +6,14 @@ This is a **course project** for the "AI dla programistów: agenci AI w pracy z 
 
 This is only the **base starting repository** for the course; concrete decisions are made live with the group.
 
-Chat in Polish unless the user asks for another language. Course PRD/ADR exercises and participant-facing project documentation use Polish. Keep filenames and code identifiers in English. The optional teaching library retains its source languages. This is a greenfield scaffold, not an agreed product specification. For a legacy-led course, keep materials separate and work in the original application clone; adapt these instructions to its actual stack and verification commands.
+Chat in Polish unless the user asks for another language. Course PRD/ADR exercises and participant-facing project documentation use Polish; in this project the specs in `docs/` (PRD, ADR, plan) were agreed in English, `app/README.md` is Polish and the UI language is set in the PRD. Keep filenames and code identifiers in English. The optional teaching library retains its source languages. This is a greenfield scaffold, not an agreed product specification. For a legacy-led course, keep materials separate and work in the original application clone; adapt these instructions to its actual stack and verification commands.
 
 **Key docs** (created during the course — load only when in doubt):
 - `docs/PRD.md` — product requirements and acceptance criteria
 - `docs/ADR/` — Architecture Decision Records
-- `docs/design-guidelines.md` — design system and tokens
+- `docs/mvp-scope.md` — what each stage builds; `docs/implementation-plan.md` — phase plan and status
+- `reports/map-qa/profile.md` — measured data facts (source of truth for counts)
+- `docs/design-guidelines.md` — design system and tokens (only if created)
 
 ---
 
@@ -71,7 +73,7 @@ Investigate production code and fixtures before changing a failing assertion. Do
 
 Use the application's actual runtime and verified commands. The browser flow below applies to web applications; desktop applications need their real UI, and command-line tools need observable CLI checks.
 
-For CLI work, run the actual CLI and inspect its output. For web UI work, use **the Playwright CLI** to drive the real running app like a human tester:
+For CLI work, run the actual CLI and inspect its output. For web UI work, use **Playwright** (the Playwright CLI, or Playwright for Python with the system browser when the CLI is not installed — see the scoped `AGENTS.md`) to drive the real running app like a human tester:
 
 1. Start the app with its verified project command and open it in the browser. Record successful startup separately from compilation and test execution.
 2. Take a screenshot of every screen you touched.

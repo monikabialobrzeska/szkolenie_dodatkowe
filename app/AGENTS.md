@@ -6,7 +6,7 @@ Applies to work inside `app/`. Root `AGENTS.md` still applies; this file adds st
 
 - Python 3.12 via uv only: `uv sync`, `uv run mapqa …`, `uv run pytest`. Never use the system Python (3.14, no deps).
 - Unit tests: `uv run pytest -m "not integration"` (~1 s). Full suite incl. real CLI on the snapshot: `uv run pytest` (~2.5 min).
-- Manual QA: `uv run mapqa run` then `uv run mapqa view`; for screenshots drive system Edge with Playwright for Python (`channel="msedge"`), save to `reports/map-qa/qa/`.
+- Manual QA: `uv run mapqa run` then `uv run mapqa view`; for screenshots drive system Edge with Playwright for Python (`channel="msedge"`, no browser download): `uv run --with playwright==1.55.0 python <qa-script>`; save to `reports/map-qa/qa/`.
 
 ## Where things live
 

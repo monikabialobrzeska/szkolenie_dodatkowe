@@ -58,11 +58,11 @@ A single TOML file. Its path is taken from, in order: `--config PATH`, environme
 
 Unknown keys are a configuration error (exit 2) naming the key, so typos do not silently fall back to defaults.
 
-**Secrets are never configuration keys.** If the TOML contains any key named `token`, `password`, `secret` or ending in `_token`, the run exits 2 with "secrets must be set in the environment, not in the config file"; the value is not echoed.
+**Secrets are never configuration keys.** If the TOML contains any key whose name contains `token`, `password` or `secret`, or ends in `_key` (as implemented in `config.py`), the run exits 2 with "secrets must be set in the environment, not in the config file"; the value is not echoed.
 
 ### 3.3 Precedence
 
-For every setting: command-line option → environment variable (only `MAPQA_DATA_SOURCE` for `source.kind`) → configuration file → built-in default. The resolved configuration (without secrets) is written to `run_summary.json` under `config`, including which layer supplied `source.kind` (`cli`, `env`, `file`, `default`).
+For every setting: command-line option → environment variable (only `MAPQA_DATA_SOURCE` for `source.kind`) → configuration file → built-in default. **Exception — Databricks connection settings (Stage 2):** `source.databricks.host` / `warehouse_id` come from the TOML first, then from `DATABRICKS_HOST` / `DATABRICKS_SQL_WAREHOUSE_ID` as fallback (there are no CLI options for them); the token only from `DATABRICKS_TOKEN`. ADR-004 must keep this order. The resolved configuration (without secrets) is written to `run_summary.json` under `config`, including which layer supplied `source.kind` (`cli`, `env`, `file`, `default`).
 
 ---
 

@@ -33,9 +33,9 @@ Today an analyst has to open several sources by hand, find the matching road in 
 1. The user selects the data source for the run in the configuration — local files, Databricks tables or public APIs — and starts the run.
 2. The system checks that the selected source is reachable and that credentials it needs are present (without displaying them), then reads the OSM roads, the Overture road segments, the Mapillary speed-limit sign objects, the photo manifest and the photo-to-road links from that source. Inputs are never modified.
 3. The system interprets every OSM speed-limit value and every Overture speed-limit rule, keeping the original raw value alongside the interpreted value.
-4. The system pairs OSM roads with Overture segments describing the same road.
+4. The system pairs OSM roads with Overture segments describing the same road. *(Deferred — OSM vs Overture check, `mvp-scope.md` §1.2.)*
 5. The system associates each speed-limit sign with candidate roads near the sign's position.
-6. The system evaluates the four conflict types (Section 6, AC-10 to AC-17) and assigns each candidate a state: `conflict` or `needs_review`, with a machine-readable reason code and a human-readable explanation.
+6. The system evaluates the checks in scope for the current stage (Section 6, AC-10 to AC-17b; scope per stage in `mvp-scope.md` §2) and assigns each candidate a state: `conflict` or `needs_review`, with a machine-readable reason code and a human-readable explanation.
 7. The system attaches evidence to each candidate: values and raw tags from each source, distances, sign value and dates, and all photos linked to that road, nearest first.
 8. The system orders candidates (road importance, then size of the difference) and assigns each a stable identifier.
 9. The system merges in any verdicts recorded in earlier runs (matched by candidate identifier).
@@ -83,6 +83,17 @@ Today an analyst has to open several sources by hand, find the matching road in 
 
 ## 6. Acceptance Criteria
 
+**Scope by stage** (details: `mvp-scope.md` §2, design: `docs/ADR/`):
+
+| ACs | Stage |
+|---|---|
+| AC-01–AC-09, AC-12–AC-17b, AC-19–AC-21, AC-26, AC-27 | Stage 1 (built) |
+| AC-22, AC-25 (type/state/class filters), AC-28 | Stage 1 via the read-only viewer (ADR-003); photo metadata partly |
+| AC-05a–AC-05f (Databricks part) | Stage 2 |
+| AC-10, AC-11 (OSM vs Overture) | Deferred |
+| AC-05g, AC-05h (public API), AC-05i, AC-23, AC-24, AC-25 review status, AC-25a–AC-25c | Deferred |
+| AC-29–AC-40 | Phase 2 / Stage 3 |
+
 ### Inputs and run
 - **AC-01** A run never modifies, moves or deletes any input file; input checksums before and after a run are identical.
 - **AC-02** If any required input is missing or unreadable, the run exits with a non-zero status and a message naming the input; no review queue is written.
@@ -110,7 +121,7 @@ Today an analyst has to open several sources by hand, find the matching road in 
 ### Conflict detection
 - **AC-10** *OSM vs Overture:* for a matched OSM–Overture pair where both have an unconditional limit for the same direction and the values differ, a `conflict` candidate is created showing both values and the difference in km/h.
 - **AC-11** *OSM vs Overture:* if either side's limit is conditional (time, vehicle type, part of segment) or direction-specific and the directions cannot be aligned, the candidate is `needs_review` with the corresponding reason.
-- **AC-12** *Sign vs road:* a sign associated with exactly one road within the distance limit, whose value differs from that road's interpreted limit, creates a `conflict` candidate showing the sign value, sign dates and distance.
+- **AC-12** *Sign vs road:* a sign associated with exactly one road within the distance limit, whose value differs from that road's interpreted limit, creates a `needs_review` candidate (reason `sign_road_mismatch`, or a more specific reason per ADR-002 §6.2) showing the sign value, sign dates and distance. *(Revised 2026-11-12: never `conflict` until the manual precision sample justifies promotion — `mvp-scope.md` §2, Deferred.)*
 - **AC-13** *Sign vs road:* a sign with two or more candidate roads within the distance limit (parallel carriageway, slip road, bridge/tunnel) creates a `needs_review` candidate listing all candidate roads.
 - **AC-14** A sign value that matches the road's limit creates no candidate.
 - **AC-15** *Missing limit:* every OSM road of class motorway, trunk, primary or secondary (including their link roads) with no speed-limit value at all creates a `conflict` candidate of type "missing limit".
@@ -326,7 +337,7 @@ The automated decision rules must follow these constraints:
 - Users: both analyst and team lead.
 - After a run: view results and record verdicts.
 - UI form: static report or local dashboard — to be chosen in the ADR.
-- All four conflict types are in the MVP.
+- All four conflict types are in the MVP. *(Superseded 2026-11-12: OSM vs Overture deferred — `mvp-scope.md` §1.2; tag inconsistency added — AC-17a.)*
 - Ambiguous cases: separate `needs_review` state with reason.
 - No AI in the MVP; model reading of sign crops specified as Phase 2.
 - Phase 2 budget: max 25 model calls per run including errors, no retries, 40 s timeout.

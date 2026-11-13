@@ -1,64 +1,47 @@
-# Implementation Plan — Stage 1 + Viewer (one continuous flow)
+# Implementation Plan — Stage 1 (done) and Stage 2 (Databricks)
 
-**Date:** 2026-11-12 · **Branch:** `map-app-implementation` · **Specs:** `docs/PRD.md`, `docs/mvp-scope.md`, `docs/ADR/000–003`, `reports/map-qa/profile.md`
+**Branch:** `map-app-implementation` · **Updated:** 2026-11-13
 
-Phases are ordered by dependency: each phase only uses what earlier phases delivered, and each ends green (tests pass) with one focused commit. An agent running this plan without stopping executes the phases top to bottom, checks the exit criteria, and only then moves on. Out-of-scope items are listed at the end and must not be started.
+This plan only orders the work and tracks status. What to build lives in `docs/PRD.md` (scope by stage: §6 table) and `docs/mvp-scope.md` §2; how to build it lives in `docs/ADR/`; measured counts live in `reports/map-qa/profile.md`. Working rules (TDD, uv, read-only inputs, `--help` first, commit format, **push only when the user asks**) are in `AGENTS.md` and `app/AGENTS.md` — they are not repeated here.
 
-## Ground rules for the whole flow
+Each phase ends green with one focused commit; an agent running the plan without stopping does the phases top to bottom and checks each exit criterion before moving on.
 
-- TDD: tests first, run them red for the expected reason, implement, run green (`AGENTS.md`).
-- Run everything from `app/` with `uv run …`; never the system Python.
-- Inputs in `course-materials/exercise-data/map-qa/` are read-only; outputs go to `reports/map-qa/stage1/` (git-ignored) or `tmp_path` in tests.
-- Look up CLI/library details with `--help` / installed version before use.
-- No paid APIs, no Databricks calls in Stage 1, no secrets in files or output.
-- Commit format `Area: summary` + the attribution line; push to `mine` only at the end of a phase group (P3, P6, P8).
+## Stage 1 — local files + read-only viewer (done)
 
-## Phases
+| Phase | Result | Commit |
+|---|---|---|
+| P0 Scope & docs | viewer scoped (ADR-003) | `e240dbc` |
+| P1 Rule core | interpretation, 4 checks, ranking/IDs, real-data fixtures (ADR-002) | `1a73561` |
+| P2–P4 Source, pipeline, CLI, viewer | `run`, `check-source`, `view` (ADR-000/001/003) | `8544b06` |
+| P5–P6 Verification + manual QA | 55 tests green, full run 52 s, Edge screenshots in `reports/map-qa/qa/` | `bd7ed13`, `85560da` |
+| P7–P8 Docs + wrap-up | `app/README.md`, `app/AGENTS.md`, example config | `e35863a` |
 
-| # | Phase | Priority | Depends on | Delivers | Exit criteria | Status |
-|---|---|---|---|---|---|---|
-| P0 | Scope & docs | must | — | PRD/ADR updates, ADR-003 viewer, this plan | docs committed | ✅ `e240dbc` |
-| P1 | Scaffold + rule core | must | P0 | uv project `app/`, real-data fixtures, `interpret`, 4 checks, ranking/IDs | 6 ADR-002 unit cases green | ✅ `1a73561` |
-| P2 | Config + files adapter | must | P1 | `config.py` (TOML, precedence, strict/secret keys), `sources/` (`FilesSource`: check, checksums, load with `ST_AsWKB`, timestamps, bbox) | `check-source` works on the snapshot; config error tests green | ✅ `8544b06` (with P3–P4: pipeline imports the viewer) |
-| P3 | Pipeline + CLI `run` | must | P2 | `evidence.py`, `pipeline.py`, `outputs/` (CSV, GeoJSON, `summary.md`, `run_summary.json`, atomic write, `last_failed_run.json`), `cli.py` (`run`, `check-source`, exit codes 0–4), `__main__.py` | integration tests green: counts, determinism, input checksums, missing input → 3, Stage 2 sources → 4; TAC-002-04 ranges | ✅ `8544b06` |
-| P4 | Viewer | must | P3 | `outputs/viewer.py` + template (Leaflet 1.9.4, embedded JSON, filters, detail, photos, attribution), `mapqa view`, `run` writes `viewer.html` | unit render test + view integration tests green | ✅ `8544b06` |
-| P5 | Full verification | must | P4 | full `uv run pytest`, timing of a full run, warnings fixed | all tests green, no new warnings, full run < 3 min (TAC-02) | ✅ 55 passed, run 52 s |
-| P6 | Manual QA | must | P5 | real `mapqa run` + `mapqa view`; Playwright (msedge) screenshots: initial page, filtered table, empty filter, candidate detail; console errors checked; spot-check 5 candidates against data | screenshots in `reports/map-qa/qa/`, no console errors, UI English, attribution visible | ✅ `bd7ed13` (found + fixed: sign detail lacked the compared OSM way) |
-| P7 | Project docs | should | P6 | `app/README.md` (install, commands, outputs, exit codes), `app/mapqa.example.toml`, scoped `app/AGENTS.md`, ADR notes for any deviation found during implementation | docs consistent with behaviour (`--help` matches README) | ✅ |
-| P8 | Wrap-up | must | P7 | final commit(s), push to `mine/map-app-implementation`, summary with QA evidence | branch pushed, working tree clean except `.env.example` | ✅ |
+Definition of done for Stage 1 = ADR-000 §10 and ADR-003 §8 technical acceptance criteria; all met.
 
-### Priority order if time runs short
+## Stage 2 — Databricks source
 
-P3 → P4 → P5 → P6 are the product; P7 can be reduced to `app/README.md` + example config. Never skip P5/P6: a task is not done without verification and manual QA.
+**Goal:** PRD AC-05a–AC-05f, `mvp-scope.md` §2 items 9–10: `mapqa run --source databricks` reads the five `workspace.map_qa` tables read-only and produces a review queue byte-identical to `--source files` on the pinned snapshot.
 
-## Definition of done (whole flow)
+**Prerequisite:** the session is started from a PowerShell window with `DATABRICKS_HOST`, `DATABRICKS_TOKEN`, `DATABRICKS_SQL_WAREHOUSE_ID` set; verify by following `.agents/skills/check-databricks/SKILL.md` (`/check-databricks` once its `.claude/skills` junction exists). Without access the agent stops and asks; it never mocks from documentation.
 
-- `uv run mapqa run` on the pinned snapshot exits 0 and writes `review_queue.csv`, `review_queue.geojson`, `summary.md`, `run_summary.json`, `viewer.html`.
-- `uv run mapqa view` opens the viewer; filters, map selection, detail panel and photo strip work; attribution visible.
-- All PRD Stage 1 ACs in scope and TACs of ADR-000…003 pass or are explicitly reported as not met.
-- Tests green, two runs byte-identical, inputs unchanged.
+| # | Phase | Delivers | Exit criterion | Status |
+|---|---|---|---|---|
+| S2-0 | Access check | variables present, token shape ok, one `SELECT count(*)` | 5/5 counts equal files | ✅ 2026-11-13 |
+| S2-1 | Discovery + real captures | `DESCRIBE` of the 5 tables; verbatim captures (per `AGENTS.md` mock rule) of a small `SELECT`, a multi-chunk result, a `FAILED` statement and a poll sequence in `app/tests/fixtures/databricks/`; measured size of the projected `osm_roads` result | captures contain no secret (token-sentinel grep); transport limits measured | |
+| S2-2 | ADR-004 Databricks adapter | decisions listed below, based on S2-1 | ADR accepted; open trade-offs confirmed with the user | |
+| S2-3 | TDD: REST client | client per ADR-004, unit tests driven by the S2-1 captures | red → green, no network in unit tests | |
+| S2-4 | TDD: `DatabricksSource` | same `InputBundle` contract as files (ADR-001 §4.2), `check-source --source databricks` | unit tests green; existing suite green | |
+| S2-5 | Parity + integration | tests marked `databricks` (register the marker in `app/pyproject.toml`; skip with an explicit reason when variables are missing): counts = files, `review_queue.*` byte-identical, wrong token → exit 4 without leaking it, no fallback | parity green against the real warehouse | |
+| S2-6 | Manual QA | real runs on both sources, `diff`, timing incl. warehouse wake-up, viewer from the Databricks run, screenshots in `reports/map-qa/qa/stage2/` | evidence recorded | |
+| S2-7 | Docs | `app/README.md`, `mapqa.example.toml`, `app/AGENTS.md` (or `app/src/mapqa/sources/AGENTS.md`), skill notes | docs match `--help` | |
 
----
+**ADR-004 must decide** (inputs: ADR-001 §4.5, S2-1 measurements, consistency review 2026-11-13):
+1. Transport for ~100k rows with geometry (INLINE + chunks, `osm_id` range paging, or `EXTERNAL_LINKS`/Arrow), server-side projection of `maxspeed*` tags, geometry encoding.
+2. Type mapping from `manifest.schema` (values arrive as JSON strings), polling and timeouts, error → exit 4 mapping, read-only guard (fixed `SELECT` templates only).
+3. Snapshot identity for a remote source (`sources.json` is a local file) and what `run_summary.json` `inputs.*.sha256_*` hold for remote inputs (TAC-04).
+4. Viewer in a Databricks run: road geometries from the active adapter's `InputBundle`, not from local `osm_roads.parquet`; whether offline thumbnails are an allowed local presentation asset (otherwise PRD §7 "mixing sources" is violated).
+5. Keep the connection-settings order fixed in ADR-001 §3.3 (TOML, then `DATABRICKS_*` fallback; token only from the environment).
 
-# Stage 2 — Databricks source (planned 2026-11-13)
+## Out of scope
 
-**Goal (`mvp-scope.md` §2 items 9–10, PRD AC-05a–AC-05f):** `mapqa run --source databricks` reads the five `workspace.map_qa` tables read-only and produces a review queue **byte-identical** to `--source files` on the same pinned snapshot.
-
-**Hard prerequisite:** the Claude Code session must be started from a PowerShell window where `DATABRICKS_HOST`, `DATABRICKS_TOKEN`, `DATABRICKS_SQL_WAREHOUSE_ID` are set (see `.agents/skills/check-databricks`). Without them S2-1, S2-5 and S2-6 cannot run; the agent stops and asks instead of mocking from documentation.
-
-| # | Phase | Priority | Depends on | Delivers | Exit criteria | Status |
-|---|---|---|---|---|---|---|
-| S2-0 | Access check | must | — | `/check-databricks`: variables present, one `SELECT count(*)`, counts equal files | 5/5 counts match | |
-| S2-1 | Discovery + real captures | must | S2-0 | `DESCRIBE` of the 5 tables (types vs local files); verbatim captures (status, headers without secrets, body, date, statement, warehouse id) of: a small `SELECT`, a multi-chunk result, a `FAILED` statement, a `PENDING` → poll sequence → `app/tests/fixtures/databricks/`; measured size of the projected `osm_roads` result | captures saved with no secrets (grep for the token sentinel); transport limits measured | |
-| S2-2 | ADR-004 Databricks adapter | must | S2-1 | decisions: transport (INLINE + chunks vs `osm_id` range paging vs `EXTERNAL_LINKS`/Arrow, from the measurement), server-side projection (`get_json_object` for `maxspeed*` tags, `hex(geometry)` or base64), type mapping from `manifest.schema`, polling/timeouts, error → exit 4 mapping, read-only guard (fixed `SELECT` templates only), config/env precedence for host/warehouse/schema | ADR reviewed with the user if a transport trade-off remains | |
-| S2-3 | TDD: REST client + type casting | must | S2-2 | `sources/databricks_client.py` (urllib, no new dependency): submit, poll same `statement_id`, follow chunks, `FAILED`/`CANCELED`/HTTP 401/403 → `SourceUnavailable`, never prints the token; unit tests driven by the S2-1 captures | red → green; no test needs network | |
-| S2-4 | TDD: `DatabricksSource` + shared normalisation | must | S2-3 | adapter returning the same `InputBundle` (columns, dtypes, sort order, EPSG:2180) as `FilesSource`; refactor a shared `normalise_*` step so parity is structural, not coincidental; `check-source --source databricks` (reachability + credentials present) | unit tests green; existing 55 tests still green | |
-| S2-5 | Parity + integration | must | S2-4 | integration tests marked `databricks` (skipped with an explicit reason when variables are missing): `check-source` exit 0, row counts = files, **`review_queue.csv`/`.geojson` byte-identical to files**, wrong token → exit 4 without leaking it, no fallback to files | parity test green against the real warehouse | |
-| S2-6 | Manual QA | must | S2-5 | real `mapqa run --source databricks`, timing incl. warehouse wake-up, `diff` with the files run, `run_summary.json` shows source/location/read time (AC-05f), viewer opens from the Databricks run, screenshots | evidence in `reports/map-qa/qa/stage2/` | |
-| S2-7 | Docs + wrap-up | should | S2-6 | `app/README.md`, `mapqa.example.toml`, `app/AGENTS.md`, `check-databricks` skill notes, ADR-001 §4.5 status, commits | docs match `--help`; branch pushed when the user asks | |
-
-**Stage 2 out of scope:** `public_api`, writing anything to Databricks, Databricks MCP, mixing sources in one run, automatic fallback.
-
-## Explicitly out of scope for this flow
-
-Databricks adapter and parity test (Stage 2), `public_api`, model reading pilot (Stage 3), verdict recording UI, OSM vs Overture check, tertiary roads in `missing_limit`.
+Stage 1 and Stage 2: `public_api`, writing to Databricks, Databricks MCP, mixing sources in one run, automatic fallback, verdict recording, OSM vs Overture check, model reading pilot (Stage 3), tertiary roads in `missing_limit`.

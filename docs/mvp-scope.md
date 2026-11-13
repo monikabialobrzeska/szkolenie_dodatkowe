@@ -1,6 +1,6 @@
 # MVP Scope Decision — Prototype A (Speed-Limit Conflict Finder)
 
-Status: proposed · Date: 2026-11-03 · Companion to `docs/PRD.md`
+Status: accepted (revised 2026-11-12) · Date: 2026-11-03 · Companion to `docs/PRD.md`
 
 This document records which parts of the PRD are built first, which are deferred, and why — based on a profile of the data actually available in `course-materials/exercise-data/map-qa/`. Every number below can be reproduced with the queries in the appendix. The ADR decides *how* to build it; this document decides *what* is built first.
 
@@ -41,7 +41,7 @@ This document records which parts of the PRD are built first, which are deferred
 | Distance to nearest non-service road: median / 90th percentile | 5.4 m / 14.7 m |
 | Signs with a non-service road within 20 m | 1,625 |
 | … with **exactly one** candidate road within 20 m | **421** (the rest are ambiguous) |
-| … of those 421, road has a `maxspeed` | 330: **170 equal, 160 differ**; 91 roads without `maxspeed` |
+| … of those 421, road has a `maxspeed` | 330: **170 equal, 160 differ**; 91 roads without `maxspeed` *(first profile; superseded by §1.5)* |
 
 Cross-check on the curated sign set (`signs/`): for 71 certain numeric labels with a nearest OSM road that has `maxspeed`, only **25 match**.
 
@@ -68,9 +68,9 @@ Details and queries: `reports/map-qa/profile.md`. Local files and the five Datab
 
 | Finding | Number | Consequence |
 |---|---|---|
-| Signs with exactly one non-service road within 20 m | 420: 180 equal, 162 differ, 78 road without limit | Confirms §1.3 |
+| Signs with exactly one non-service road within 20 m | 420: 180 equal, 162 differ, 78 road without limit | Supersedes §1.3 (directional tags respected) |
 | … of the 240 not equal, sign last seen before the road's last OSM edit | **191** | New reason `stale_sign` |
-| `source:maxspeed` / `maxspeed:type` contradicts `maxspeed` (e.g. `PL:urban` + `70`) | **161 ways** (102 main roads) | New Check 3 in Stage 1 |
+| `source:maxspeed` / `maxspeed:type` contradicts `maxspeed` (e.g. `PL:urban` + `70`) | **161 ways** (102 main roads) | New check `tag_inconsistency` in Stage 1 |
 | `tunnel=building_passage` among `tunnel` tags | 605 of 827 | Not treated as another level |
 | Ways with a limit in one direction only, no `maxspeed` | 58 | Other direction = unknown |
 | Distinct OSM ways with any linked photo | 230 of 99,768 | Most candidates have no photo |
@@ -80,7 +80,7 @@ Details and queries: `reports/map-qa/profile.md`. Local files and the five Datab
 
 ## 2. Decision: what the MVP contains
 
-The MVP is a **command-line tool without a user interface**. It produces files that an analyst opens in QGIS or a spreadsheet, and that an agent can read.
+The MVP is a **command-line tool with a read-only static viewer** (item 8a, ADR-003; no verdict recording). It produces files that an analyst opens in QGIS or a spreadsheet, and that an agent can read.
 
 ### Stage 1 — Workflow on local files (build first)
 
@@ -89,7 +89,7 @@ The MVP is a **command-line tool without a user interface**. It produces files t
 3. **Speed-limit interpretation:** numeric `maxspeed`, `maxspeed:forward` / `:backward`, conditional and variable flags. Raw tags are kept. A value that cannot be interpreted is flagged (0 such values expected in this snapshot; covered by test fixtures).
 4. **Check 1 — Missing limit on main roads:** state `conflict`. Expected order of magnitude: ~290 ways.
 5. **Check 2 — Sign vs road:** a sign with exactly one non-service road within the distance limit and a value different from that road's limit (respecting directional tags) → state `needs_review`, reason `sign_road_mismatch`. More than one candidate road, a conditional or variable limit, a bridge or tunnel, or a sign older than the road's last OSM edit (`stale_sign`) → `needs_review` with the specific reason. An equal value → no candidate.
-5a. **Check 3 — Tag inconsistency** (added 2026-11-12 after the data profile): `source:maxspeed` / `maxspeed:type` names a Polish implicit category whose allowed values do not include the numeric `maxspeed` (e.g. `PL:urban` with `70`) → state `conflict`. Expected order of magnitude: ~161 ways (102 on main roads).
+5a. **Check 4 — `tag_inconsistency`** (numbering as in ADR-002 §6) (added 2026-11-12 after the data profile): `source:maxspeed` / `maxspeed:type` names a Polish implicit category whose allowed values do not include the numeric `maxspeed` (e.g. `PL:urban` with `70`) → state `conflict`. Expected order of magnitude: ~161 ways (102 on main roads).
 6. **Evidence:** source IDs, raw and interpreted values, distance, sign dates, and the IDs and count of all photos linked to the road.
 7. **Ranking and stable candidate IDs** as in PRD AC-19 and AC-20.
 8. **Outputs:** review queue as CSV and GeoJSON (opens in QGIS), summary report in Markdown, and a run summary in JSON.

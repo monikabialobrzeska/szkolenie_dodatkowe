@@ -12,7 +12,7 @@
 
 ## 1. Overview
 
-Stage 1 delivers a **command-line tool without a user interface** (`mapqa`) that reads the pinned Kraków snapshot from local files, interprets OSM speed limits, runs two checks — *missing limit on main roads* and *sign vs road* — and writes a ranked review queue (CSV + GeoJSON), a Markdown summary report and a machine-readable JSON run summary. Analysts open the outputs in QGIS or a spreadsheet; other agents read the JSON summary.
+Stage 1 delivers a **command-line tool** (`mapqa`) that reads the pinned Kraków snapshot from local files, interprets OSM speed limits, runs the checks of ADR-002 §6 (`missing_limit`, `sign_road`, `unparseable_value`, `tag_inconsistency`) and writes a ranked review queue (CSV + GeoJSON), a Markdown summary report, a machine-readable JSON run summary and a **read-only static viewer** `viewer.html` (ADR-003). Analysts use the viewer, QGIS or a spreadsheet; other agents read the JSON summary.
 
 This ADR set, together with the PRD and the MVP scope document, is the complete specification for the Stage 1 implementation. It covers:
 
@@ -24,7 +24,7 @@ This ADR set, together with the PRD and the MVP scope document, is the complete 
 
 **In scope (Stage 1, from `mvp-scope.md` §2):** items 1–8 incl. 5a — CLI, source configuration (`files` only implemented), interpretation, Check 1 (missing limit), Check 2 (sign vs road, always `needs_review`, incl. `stale_sign`), unparseable-value check, Check 3 (tag inconsistency, `conflict`), evidence, ranking and stable IDs, outputs.
 
-**Out of scope for Stage 1:** `databricks` and `public_api` sources (recognised and rejected), OSM vs Overture check, UI, verdict recording, model reading of signs (Phase 2), tertiary roads in "missing limit". The architecture keeps extension points for them (source adapter interface, stable IDs, `verdicts` placeholder in the output contract) but implements none.
+**Out of scope for Stage 1:** `databricks` and `public_api` sources (recognised and rejected), OSM vs Overture check, verdict recording (UI or files), model reading of signs (Phase 2), tertiary roads in "missing limit". The architecture keeps extension points for them (source adapter interface, stable candidate IDs) but implements none.
 
 ---
 
@@ -82,8 +82,8 @@ app/
     outputs/
       queue.py            review_queue.csv + review_queue.geojson
       report.py           summary.md
-      run_summary.py      run_summary.json
-    pipeline.py           runs the stages in order, returns RunResult
+      viewer.py           viewer.html (+ viewer_template.html), ADR-003
+    pipeline.py           runs the stages in order, writes run_summary.json, returns RunResult
   tests/
     unit/
     integration/
@@ -171,6 +171,7 @@ No verdict model exists in Stage 1. Output schemas contain no verdict columns; a
 |---|---|---|
 | `mapqa run` | Full pipeline | `--config PATH`, `--source {files,databricks,public_api}`, `--data-dir PATH`, `--output-dir PATH`, `--distance-m FLOAT` |
 | `mapqa check-source` | Verify that the selected source is usable without running checks (ADR-001 §5) | `--config PATH`, `--source …`, `--data-dir PATH` |
+| `mapqa view` | Regenerate `viewer.html` from the last run and open it (ADR-003 §5) | `--output-dir PATH`, `--no-open` |
 
 Command-line options override the configuration (precedence in ADR-001 §3).
 
@@ -193,7 +194,8 @@ Written to the output folder (default `reports/map-qa/stage1/`). All text files 
 | File | Content | Contract |
 |---|---|---|
 | `review_queue.csv` | One row per candidate in rank order | Columns, in order: `rank, candidate_id, type, state, reason_code, explanation, road_class, osm_ids, sign_id, osm_value_raw, osm_value_kmh, osm_forward_kmh, osm_backward_kmh, sign_value_kmh, diff_kmh, distance_m, sign_first_seen_at, sign_last_seen_at, photo_count, photo_ids, osm_version, osm_timestamp, lon, lat`. List fields joined with `;`. Empty string for null. `lon`/`lat` = representative point (sign position, or the road's midpoint on the line) in EPSG:4326, 6 decimals. |
-| `review_queue.geojson` | Same rows as features | EPSG:4326 (RFC 7946). Geometry: sign `Point` for `sign_road`, road `LineString` for `missing_limit` and `unparseable_value`. Properties = CSV columns except `lon`/`lat`. Coordinates rounded to 7 decimals. QGIS loads it as two sub-layers by geometry type. |
+| `review_queue.geojson` | Same rows as features | EPSG:4326 (RFC 7946). Geometry: sign `Point` for `sign_road`, road `LineString` for `missing_limit`, `unparseable_value` and `tag_inconsistency`. Properties = CSV columns except `lon`/`lat`. Coordinates rounded to 7 decimals. QGIS loads it as two sub-layers by geometry type. |
+| `viewer.html` | Analyst | Read-only map + table + candidate detail with embedded data (ADR-003). |
 | `summary.md` | Team-lead report | Sections: snapshot identification (OSM extract date, Overture release, from `sources.json`), source and read time, rows read, table type × state, table by road class, skipped and unmatched with reasons, distance limit used, the implicit-value mapping table, attribution and licences (AC-27) copied from `ATTRIBUTION.md` headings. Every count equals the matching rows in `review_queue.csv` (AC-26). Wording uses "candidate", never "error". |
 | `run_summary.json` | Agent-readable summary | Keys: `tool_version`, `command`, `exit_code`, `source` {`kind`, `location`, `read_at`}, `config` {resolved values, no secrets}, `inputs` {name → {`path`, `rows`, `sha256_before`, `sha256_after`}}, `counts` {`by_type_state`, `by_road_class`, `skipped`, `unmatched`}, `outputs` {name → relative path}. Written also on exit codes 3 and 4 into the output folder's `last_failed_run.json` (the queue is not written in that case). |
 
@@ -267,7 +269,7 @@ No other variables are read. `.env` files are not loaded by the tool.
 - Local dashboard: highest effort; deferred until after the precision sample.
 **Consequences:**
 - (+) Minimal surface; outputs are diffable and agent-readable.
-- (-) AC-22 thumbnails, AC-23–AC-25 and AC-28 map attribution are not met in Stage 1 (attribution is in `summary.md`).
+- (-) AC-23–AC-25 (verdicts, review status) are not met in Stage 1. *(Amended by ADR-003: AC-28 map attribution and offline photo thumbnails are provided by `viewer.html`.)*
 **Review trigger:** The manual precision sample (`mvp-scope.md` §4) is complete, or analysts need verdicts recorded.
 
 ### D5. Atomic output writing
@@ -336,7 +338,7 @@ flowchart TB
     subgraph Outputs
         q[outputs/queue.py]
         rep[outputs/report.py]
-        rs[outputs/run_summary.py]
+        vw[outputs/viewer.py]
     end
     data[(course-materials/exercise-data/map-qa<br/>read-only)]
     out[(reports/map-qa/stage1)]
@@ -352,8 +354,8 @@ flowchart TB
     pipe --> ml & sr & up & ti
     ml & sr & up & ti --> interp
     pipe --> ev --> rk
-    pipe --> q & rep & rs
-    q & rep & rs --> out
+    pipe --> q & rep & vw
+    q & rep & vw --> out
 ```
 
 ### 9.2 Data Flow Diagram
@@ -368,7 +370,7 @@ flowchart LR
     A1 --> I[interpret: SpeedLimit per road]
     I --> K1[Check 1: missing_limit]
     I --> K3[unparseable_value]
-    I --> K4[Check 3: tag_inconsistency]
+    I --> K4[Check 4: tag_inconsistency]
     B1 --> P[parse sign value]
     P --> S[associate: non-service roads<br/>within 20 m]
     A1 --> S
@@ -478,7 +480,7 @@ TDD per `AGENTS.md`: for every rule, write the failing test first from the PRD/A
 |---|---|---|---|
 | Unit | Pure functions and checks on fixture frames; no file I/O except fixtures | `interpret`, `checks.*`, `ranking`, `evidence`, `config` | pytest, parametrize |
 | Integration | Real CLI (`subprocess` running `mapqa`) on the real snapshot; outputs into `tmp_path` | whole pipeline, exit codes, determinism, input immutability | pytest, marker `integration` |
-| E2E | Not applicable (no UI); the integration test is the real-stack run | — | — |
+| E2E | Real CLI run (integration suite) + browser QA of `viewer.html` (ADR-003 §8) | real stack | pytest, Playwright |
 | Manual QA | Open `review_queue.geojson` in QGIS, read `summary.md`, inspect 5 candidates | AGENTS.md Manual QA for CLI | QGIS, terminal |
 
 Integration tests are marked `integration` and run with `uv run pytest -m integration`; the default `uv run pytest` runs everything.
@@ -500,7 +502,7 @@ Integration:
 
 | Scenario | Input | Expected |
 |---|---|---|
-| Full run | real snapshot, default config | exit 0; four output files; counts in `run_summary.json` equal row counts in `review_queue.csv` per type × state |
+| Full run | real snapshot, default config | exit 0; five output files (incl. `viewer.html`); counts in `run_summary.json` equal row counts in `review_queue.csv` per type × state |
 | Inputs unchanged | same | SHA-256 of all five inputs identical before and after (AC-01) |
 | Determinism | two runs into two `tmp_path` folders | `review_queue.csv` and `.geojson` byte-identical (AC-03) |
 | Missing input | data dir copy in `tmp_path` without `photos.csv` | exit 3; stderr names `photos.csv`; no `review_queue.csv` written (AC-02) |

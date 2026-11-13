@@ -131,7 +131,7 @@ Roads with directional tags are not **missing** (§3.3) and therefore not candid
 | 7 | kind directional | `needs_review` | `direction_unknown` |
 | 8 | kind numeric | `needs_review` | `sign_road_mismatch` |
 
-`stale_sign` comes after the structural reasons (level, variable, conditional), because those explain a difference regardless of dates, and before the value-based reasons, because a sign observed before the latest map edit cannot contradict that edit. Expected on the pinned snapshot: 191 of the 240 single-road signs that do not match.
+`stale_sign` comes after the structural reasons (level, variable, conditional), because those explain a difference regardless of dates, and before the value-based reasons, because a sign observed before the latest map edit cannot contradict that edit. On the pinned snapshot 191 of the 240 non-matching single-road signs are older than the road edit (raw profile count); after the higher-priority reasons (level, variable, conditional) the run of 2026-11-12 produced 182 `stale_sign` candidates.
 
 `diff_kmh`: numeric → |sign − value|; directional → minimum over the known directions; otherwise null.
 
