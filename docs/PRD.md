@@ -362,10 +362,10 @@ The automated decision rules must follow these constraints:
 3. ~~How to treat a sign whose `last_seen_at` is older than the OSM edit date~~ — resolved: AC-17b.
 4. Where verdicts are stored so they can be shared between two analysts later (out of scope now, but affects the storage choice).
 5. Should `tertiary` roads also count for "missing limit" if the number of candidates stays manageable?
-6. Phase 2: abstention threshold value and the probability source to use (to be set on a validation split before the final test).
+6. Phase 2: abstention threshold value and the probability source to use (to be set on a validation split before the final test). *(Resolved 2026-11-13, ADR-005 §5: 0.7 on the decision model's highest probability, fixed in advance; no validation split fits the budget.)*
 7. Phase 2: who approves the budget before the first paid call (trainer allocation). *(Resolved 2026-11-13: the user confirms the sample manifest before the first paid call, AC-33; trainer provided `OPENROUTER_API_KEY` and the model list.)*
 8. ~~Phase 2: should the 25-call limit be split between tiers?~~ — resolved 2026-11-13: 25 calls per model (AC-31).
-9. Phase 2: how the tier-2 LLM signals uncertainty — an explicit `uncertain` option, a self-reported confidence, or only `unreadable`? (General LLMs do not return calibrated probabilities; the ADR must define the rule used in AC-35b.)
+9. Phase 2: how the tier-2 LLM signals uncertainty — an explicit `uncertain` option, a self-reported confidence, or only `unreadable`? (General LLMs do not return calibrated probabilities; the ADR must define the rule used in AC-35b.) *(Resolved 2026-11-13, ADR-005 §4.4: explicit `uncertain` boolean in a strict JSON schema.)*
 10. `public_api` source: the APIs do not provide photo-to-road links, and Mapillary photo URLs expire. Confirm that recomputing links and refreshing URLs per run is acceptable, and which request limits to set.
 11. Should the configuration also allow other warehouses later (e.g. PostGIS), or are the three sources enough for the course?
 

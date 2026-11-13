@@ -66,6 +66,8 @@ CASES = {
     "jev_decision": ("/api/alpha/decisions", "typesafe/jev-1.14", "decisions"),
     "luna_decisions_decision": ("/api/alpha/decisions", "openai/gpt-6-luna-decisions", "decisions"),
     "luna_chat": ("/api/v1/chat/completions", "openai/gpt-6-luna", "chat"),
+    # free error case: an unknown model id is rejected by OpenRouter before any model runs
+    "error_unknown_model": ("/api/alpha/decisions", "mapqa-invalid/does-not-exist", "decisions"),
 }
 
 
@@ -111,7 +113,7 @@ def main() -> None:
             exchange["request"] = scrub_image(body, data_url, placeholder)
             exchange["state_shape"] = shape
             attempts.append(exchange)
-            if exchange.get("http_status") != 400:
+            if exchange.get("http_status") != 400 or name.startswith("error_"):
                 break  # success or a real error: never retry (AC-32)
         record = {"case": name, "model": model, "endpoint": BASE + path_,
                   "captured_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
