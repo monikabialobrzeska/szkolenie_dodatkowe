@@ -18,7 +18,7 @@ Verifies that this agent session can read the five shared tables `workspace.map_
 ## Steps
 
 1. **Presence and format** (bash):
-   for `DATABRICKS_HOST`, `DATABRICKS_TOKEN`, `DATABRICKS_SQL_WAREHOUSE_ID` print `set` / `MISSING`; check that the host starts with `https://` and has no trailing `/` (print only `ok`/`problem`).
+   for `DATABRICKS_HOST`, `DATABRICKS_TOKEN`, `DATABRICKS_SQL_WAREHOUSE_ID` print `set` / `MISSING`; check that the host starts with `https://` and has no trailing `/` (print only `ok`/`problem`). Also check the token **shape** without printing it: length (expect ~36–40), starts with `dapi`, no whitespace or non-ASCII characters. A present-but-garbage token gives HTTP 400, not 401 (see Troubleshooting).
 2. **Tools:** `databricks version`, `uv --version`. If `databricks` or `uv` is missing, give the install commands for the user to run with `!`:
    `winget install Databricks.DatabricksCLI --accept-source-agreements --accept-package-agreements` and `winget install astral-sh.uv --accept-source-agreements --accept-package-agreements`; PATH changes need a new terminal.
 3. **If any variable is MISSING**, stop and give the user these steps (they run them themselves, outside the conversation):
@@ -47,6 +47,7 @@ Verifies that this agent session can read the five shared tables `workspace.map_
 | Symptom | Likely cause | Action |
 |---|---|---|
 | HTTP 401/403 | wrong or expired token, or token without `sql` scope | user re-enters the token in a new window; never paste it here |
+| HTTP 400 with `text/plain` "Bad Request" (no JSON), even on `GET /api/2.0/sql/warehouses/<id>` | malformed `Authorization` header: the token variable is garbage. Seen 2026-11-13: length 1, one non-ASCII char, because **Ctrl+V inside `Read-Host -MaskInput` inserts a control character** | check shape only: `${#DATABRICKS_TOKEN}` (expect ~36–40), starts with `dapi`, no whitespace/non-ASCII; user re-enters it pasting with right-click or Ctrl+Shift+V and verifies `$env:DATABRICKS_TOKEN.Length` before `claude --continue` |
 | `FAILED` with table not found | wrong catalog/schema or warehouse | check `DATABRICKS.md`; ask the trainer |
 | long `PENDING` | warehouse starting | wait; the script polls the same statement |
 | `databricks: command not found` | PATH not refreshed | new terminal, or sign out/in of Windows |
