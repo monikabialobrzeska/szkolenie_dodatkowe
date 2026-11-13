@@ -1,0 +1,198 @@
+{
+  "case": "describe_photos",
+  "captured_at": "2026-11-13T09:20:30Z",
+  "target": "SQL Statement Execution API 2.0, schema workspace.map_qa",
+  "request": {
+    "warehouse_id": "97c455ee6fb1fcb9",
+    "statement": "DESCRIBE TABLE workspace.map_qa.photos",
+    "wait_timeout": "10s",
+    "on_wait_timeout": "CONTINUE",
+    "disposition": "INLINE",
+    "format": "JSON_ARRAY"
+  },
+  "exchanges": [
+    {
+      "method": "POST",
+      "path": "/api/2.0/sql/statements",
+      "http_status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "content-length": "1259",
+        "x-databricks-org-id": "7474654895662663",
+        "x-request-id": "e9872ffa-8cdf-48bc-92cb-d02c355f4640"
+      },
+      "elapsed_s": 1.39,
+      "body_bytes": 1259,
+      "body": {
+        "statement_id": "01f1df43-7a18-1582-897c-19a70554c306",
+        "status": {
+          "state": "SUCCEEDED"
+        },
+        "manifest": {
+          "format": "JSON_ARRAY",
+          "schema": {
+            "column_count": 3,
+            "columns": [
+              {
+                "name": "col_name",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 0
+              },
+              {
+                "name": "data_type",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 1
+              },
+              {
+                "name": "comment",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 2
+              }
+            ]
+          },
+          "total_chunk_count": 1,
+          "chunks": [
+            {
+              "chunk_index": 0,
+              "row_offset": 0,
+              "row_count": 24
+            }
+          ],
+          "total_row_count": 24,
+          "truncated": false
+        },
+        "result": {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 24,
+          "data_array": [
+            [
+              "photo_id",
+              "string",
+              null
+            ],
+            [
+              "filename",
+              "string",
+              null
+            ],
+            [
+              "source",
+              "string",
+              null
+            ],
+            [
+              "url",
+              "string",
+              null
+            ],
+            [
+              "source_url",
+              "string",
+              null
+            ],
+            [
+              "longitude",
+              "double",
+              null
+            ],
+            [
+              "latitude",
+              "double",
+              null
+            ],
+            [
+              "heading",
+              "double",
+              null
+            ],
+            [
+              "captured_at",
+              "timestamp",
+              null
+            ],
+            [
+              "sequence",
+              "string",
+              null
+            ],
+            [
+              "license",
+              "string",
+              null
+            ],
+            [
+              "license_url",
+              "string",
+              null
+            ],
+            [
+              "author",
+              "string",
+              null
+            ],
+            [
+              "source_sha256",
+              "string",
+              null
+            ],
+            [
+              "sha256",
+              "string",
+              null
+            ],
+            [
+              "bytes",
+              "int",
+              null
+            ],
+            [
+              "transformation",
+              "string",
+              null
+            ],
+            [
+              "horizontal_accuracy_m",
+              "double",
+              null
+            ],
+            [
+              "is_panorama",
+              "boolean",
+              null
+            ],
+            [
+              "width",
+              "int",
+              null
+            ],
+            [
+              "height",
+              "int",
+              null
+            ],
+            [
+              "_rescued_data",
+              "string",
+              null
+            ],
+            [
+              "# Clustering Information",
+              "",
+              ""
+            ],
+            [
+              "# col_name",
+              "data_type",
+              "comment"
+            ]
+          ]
+        }
+      }
+    }
+  ],
+  "rows_read_total": 24
+}

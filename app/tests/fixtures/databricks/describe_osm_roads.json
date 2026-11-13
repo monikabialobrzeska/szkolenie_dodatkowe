@@ -1,0 +1,223 @@
+{
+  "case": "describe_osm_roads",
+  "captured_at": "2026-11-13T09:20:26Z",
+  "target": "SQL Statement Execution API 2.0, schema workspace.map_qa",
+  "request": {
+    "warehouse_id": "97c455ee6fb1fcb9",
+    "statement": "DESCRIBE TABLE workspace.map_qa.osm_roads",
+    "wait_timeout": "10s",
+    "on_wait_timeout": "CONTINUE",
+    "disposition": "INLINE",
+    "format": "JSON_ARRAY"
+  },
+  "exchanges": [
+    {
+      "method": "POST",
+      "path": "/api/2.0/sql/statements",
+      "http_status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "content-length": "1391",
+        "x-databricks-org-id": "7474654895662663",
+        "x-request-id": "c305347e-fb93-40c4-9f24-09575838d3ab"
+      },
+      "elapsed_s": 2.5,
+      "body_bytes": 1391,
+      "body": {
+        "statement_id": "01f1df43-77d5-1e03-abbe-d9884ef5aa3f",
+        "status": {
+          "state": "SUCCEEDED"
+        },
+        "manifest": {
+          "format": "JSON_ARRAY",
+          "schema": {
+            "column_count": 3,
+            "columns": [
+              {
+                "name": "col_name",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 0
+              },
+              {
+                "name": "data_type",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 1
+              },
+              {
+                "name": "comment",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 2
+              }
+            ]
+          },
+          "total_chunk_count": 1,
+          "chunks": [
+            {
+              "chunk_index": 0,
+              "row_offset": 0,
+              "row_count": 29
+            }
+          ],
+          "total_row_count": 29,
+          "truncated": false
+        },
+        "result": {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 29,
+          "data_array": [
+            [
+              "osm_id",
+              "bigint",
+              null
+            ],
+            [
+              "osm_version",
+              "bigint",
+              null
+            ],
+            [
+              "osm_timestamp",
+              "string",
+              null
+            ],
+            [
+              "node_ids",
+              "array<bigint>",
+              null
+            ],
+            [
+              "start_node",
+              "bigint",
+              null
+            ],
+            [
+              "end_node",
+              "bigint",
+              null
+            ],
+            [
+              "boundary_crossing",
+              "boolean",
+              null
+            ],
+            [
+              "tags",
+              "string",
+              null
+            ],
+            [
+              "highway",
+              "string",
+              null
+            ],
+            [
+              "maxspeed",
+              "string",
+              null
+            ],
+            [
+              "surface",
+              "string",
+              null
+            ],
+            [
+              "lanes",
+              "string",
+              null
+            ],
+            [
+              "oneway",
+              "string",
+              null
+            ],
+            [
+              "lit",
+              "string",
+              null
+            ],
+            [
+              "sidewalk",
+              "string",
+              null
+            ],
+            [
+              "sidewalk:left",
+              "string",
+              null
+            ],
+            [
+              "sidewalk:right",
+              "string",
+              null
+            ],
+            [
+              "junction",
+              "string",
+              null
+            ],
+            [
+              "ref",
+              "string",
+              null
+            ],
+            [
+              "name",
+              "string",
+              null
+            ],
+            [
+              "access",
+              "string",
+              null
+            ],
+            [
+              "motor_vehicle",
+              "string",
+              null
+            ],
+            [
+              "bridge",
+              "string",
+              null
+            ],
+            [
+              "tunnel",
+              "string",
+              null
+            ],
+            [
+              "layer",
+              "string",
+              null
+            ],
+            [
+              "geometry",
+              "binary",
+              null
+            ],
+            [
+              "_rescued_data",
+              "string",
+              null
+            ],
+            [
+              "# Clustering Information",
+              "",
+              ""
+            ],
+            [
+              "# col_name",
+              "data_type",
+              "comment"
+            ]
+          ]
+        }
+      }
+    }
+  ],
+  "rows_read_total": 29
+}

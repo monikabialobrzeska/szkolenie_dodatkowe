@@ -1,0 +1,270 @@
+{
+  "case": "osm_projection_full_inline",
+  "captured_at": "2026-11-13T09:21:56Z",
+  "target": "SQL Statement Execution API 2.0, schema workspace.map_qa",
+  "request": {
+    "warehouse_id": "97c455ee6fb1fcb9",
+    "statement": "SELECT osm_id, osm_version, osm_timestamp, highway, maxspeed, oneway, bridge, tunnel, layer, name, get_json_object(tags, \"$['maxspeed:forward']\") AS maxspeed_forward, get_json_object(tags, \"$['maxspeed:backward']\") AS maxspeed_backward, get_json_object(tags, \"$['maxspeed:conditional']\") AS maxspeed_conditional, get_json_object(tags, \"$['maxspeed:variable']\") AS maxspeed_variable, get_json_object(tags, \"$['source:maxspeed']\") AS source_maxspeed, get_json_object(tags, \"$['maxspeed:type']\") AS maxspeed_type, base64(geometry) AS geometry_b64 FROM workspace.map_qa.osm_roads ORDER BY osm_id",
+    "wait_timeout": "10s",
+    "on_wait_timeout": "CONTINUE",
+    "disposition": "INLINE",
+    "format": "JSON_ARRAY"
+  },
+  "exchanges": [
+    {
+      "method": "POST",
+      "path": "/api/2.0/sql/statements",
+      "http_status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "x-databricks-org-id": "7474654895662663",
+        "x-request-id": "dce444a2-1bd6-40f6-b841-f95c126568ad"
+      },
+      "elapsed_s": 5.41,
+      "body_bytes": 5646366,
+      "body": {
+        "statement_id": "01f1df43-ad1c-18c8-ac29-70c11f2e1677",
+        "status": {
+          "state": "SUCCEEDED"
+        },
+        "manifest": {
+          "format": "JSON_ARRAY",
+          "schema": {
+            "column_count": 17,
+            "columns": [
+              {
+                "name": "osm_id",
+                "type_text": "BIGINT",
+                "type_name": "LONG",
+                "position": 0
+              },
+              {
+                "name": "osm_version",
+                "type_text": "BIGINT",
+                "type_name": "LONG",
+                "position": 1
+              },
+              {
+                "name": "osm_timestamp",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 2
+              },
+              {
+                "name": "highway",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 3
+              },
+              {
+                "name": "maxspeed",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 4
+              },
+              {
+                "name": "oneway",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 5
+              },
+              {
+                "name": "bridge",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 6
+              },
+              {
+                "name": "tunnel",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 7
+              },
+              {
+                "name": "layer",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 8
+              },
+              {
+                "name": "name",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 9
+              },
+              {
+                "name": "maxspeed_forward",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 10
+              },
+              {
+                "name": "maxspeed_backward",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 11
+              },
+              {
+                "name": "maxspeed_conditional",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 12
+              },
+              {
+                "name": "maxspeed_variable",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 13
+              },
+              {
+                "name": "source_maxspeed",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 14
+              },
+              {
+                "name": "maxspeed_type",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 15
+              },
+              {
+                "name": "geometry_b64",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 16
+              }
+            ]
+          },
+          "total_chunk_count": 5,
+          "chunks": [
+            {
+              "chunk_index": 0,
+              "row_offset": 0,
+              "row_count": 16384
+            },
+            {
+              "chunk_index": 1,
+              "row_offset": 16384,
+              "row_count": 20480
+            },
+            {
+              "chunk_index": 2,
+              "row_offset": 36864,
+              "row_count": 24576
+            },
+            {
+              "chunk_index": 3,
+              "row_offset": 61440,
+              "row_count": 28672
+            },
+            {
+              "chunk_index": 4,
+              "row_offset": 90112,
+              "row_count": 9656
+            }
+          ],
+          "total_row_count": 99768,
+          "truncated": false
+        },
+        "result": {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 16384,
+          "next_chunk_index": 1,
+          "next_chunk_internal_link": "/api/2.0/sql/statements/01f1df43-ad1c-18c8-ac29-70c11f2e1677/result/chunks/1",
+          "data_array": [],
+          "data_array_rows_received": 16384,
+          "data_array_truncated_in_fixture": true
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/2.0/sql/statements/01f1df43-ad1c-18c8-ac29-70c11f2e1677/result/chunks/1",
+      "http_status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "x-databricks-org-id": "7474654895662663",
+        "x-request-id": "f0b3512d-d18e-4367-afb4-f4defc1993f6"
+      },
+      "elapsed_s": 4.61,
+      "body_bytes": 5695310,
+      "body": {
+        "chunk_index": 1,
+        "row_offset": 16384,
+        "row_count": 20480,
+        "next_chunk_index": 2,
+        "next_chunk_internal_link": "/api/2.0/sql/statements/01f1df43-ad1c-18c8-ac29-70c11f2e1677/result/chunks/2",
+        "data_array": [],
+        "data_array_rows_received": 20480,
+        "data_array_truncated_in_fixture": true
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/2.0/sql/statements/01f1df43-ad1c-18c8-ac29-70c11f2e1677/result/chunks/2",
+      "http_status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "x-databricks-org-id": "7474654895662663",
+        "x-request-id": "9a7173a7-b1f5-413f-ad0e-8653967a7d02"
+      },
+      "elapsed_s": 3.44,
+      "body_bytes": 5529697,
+      "body": {
+        "chunk_index": 2,
+        "row_offset": 36864,
+        "row_count": 24576,
+        "next_chunk_index": 3,
+        "next_chunk_internal_link": "/api/2.0/sql/statements/01f1df43-ad1c-18c8-ac29-70c11f2e1677/result/chunks/3",
+        "data_array": [],
+        "data_array_rows_received": 24576,
+        "data_array_truncated_in_fixture": true
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/2.0/sql/statements/01f1df43-ad1c-18c8-ac29-70c11f2e1677/result/chunks/3",
+      "http_status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "x-databricks-org-id": "7474654895662663",
+        "x-request-id": "fcba8bed-d045-42dc-880f-0b123707197a"
+      },
+      "elapsed_s": 3.81,
+      "body_bytes": 6329748,
+      "body": {
+        "chunk_index": 3,
+        "row_offset": 61440,
+        "row_count": 28672,
+        "next_chunk_index": 4,
+        "next_chunk_internal_link": "/api/2.0/sql/statements/01f1df43-ad1c-18c8-ac29-70c11f2e1677/result/chunks/4",
+        "data_array": [],
+        "data_array_rows_received": 28672,
+        "data_array_truncated_in_fixture": true
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/2.0/sql/statements/01f1df43-ad1c-18c8-ac29-70c11f2e1677/result/chunks/4",
+      "http_status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "x-databricks-org-id": "7474654895662663",
+        "x-request-id": "17c2ad95-ecea-4b5c-ae29-07554d427ddd"
+      },
+      "elapsed_s": 1.88,
+      "body_bytes": 2163021,
+      "body": {
+        "chunk_index": 4,
+        "row_offset": 90112,
+        "row_count": 9656,
+        "data_array": [],
+        "data_array_rows_received": 9656,
+        "data_array_truncated_in_fixture": true
+      }
+    }
+  ],
+  "rows_read_total": 99768
+}

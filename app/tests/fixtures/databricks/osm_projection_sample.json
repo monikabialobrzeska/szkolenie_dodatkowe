@@ -1,0 +1,219 @@
+{
+  "case": "osm_projection_sample",
+  "captured_at": "2026-11-13T09:20:34Z",
+  "target": "SQL Statement Execution API 2.0, schema workspace.map_qa",
+  "request": {
+    "warehouse_id": "97c455ee6fb1fcb9",
+    "statement": "SELECT osm_id, osm_version, osm_timestamp, highway, maxspeed, oneway, bridge, tunnel, layer, name, get_json_object(tags, \"$['maxspeed:forward']\") AS maxspeed_forward, get_json_object(tags, \"$['maxspeed:backward']\") AS maxspeed_backward, get_json_object(tags, \"$['maxspeed:conditional']\") AS maxspeed_conditional, get_json_object(tags, \"$['maxspeed:variable']\") AS maxspeed_variable, get_json_object(tags, \"$['source:maxspeed']\") AS source_maxspeed, get_json_object(tags, \"$['maxspeed:type']\") AS maxspeed_type, base64(geometry) AS geometry_b64 FROM workspace.map_qa.osm_roads WHERE osm_id IN (907138970, 224814473, 19846887) ORDER BY osm_id",
+    "wait_timeout": "10s",
+    "on_wait_timeout": "CONTINUE",
+    "disposition": "INLINE",
+    "format": "JSON_ARRAY"
+  },
+  "exchanges": [
+    {
+      "method": "POST",
+      "path": "/api/2.0/sql/statements",
+      "http_status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "content-length": "3605",
+        "x-databricks-org-id": "7474654895662663",
+        "x-request-id": "b1734ef0-d9ab-44b6-90a8-75d4f6cf4570"
+      },
+      "elapsed_s": 6.8,
+      "body_bytes": 3605,
+      "body": {
+        "statement_id": "01f1df43-7c6a-18a6-a7e0-df96f0757f9b",
+        "status": {
+          "state": "SUCCEEDED"
+        },
+        "manifest": {
+          "format": "JSON_ARRAY",
+          "schema": {
+            "column_count": 17,
+            "columns": [
+              {
+                "name": "osm_id",
+                "type_text": "BIGINT",
+                "type_name": "LONG",
+                "position": 0
+              },
+              {
+                "name": "osm_version",
+                "type_text": "BIGINT",
+                "type_name": "LONG",
+                "position": 1
+              },
+              {
+                "name": "osm_timestamp",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 2
+              },
+              {
+                "name": "highway",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 3
+              },
+              {
+                "name": "maxspeed",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 4
+              },
+              {
+                "name": "oneway",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 5
+              },
+              {
+                "name": "bridge",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 6
+              },
+              {
+                "name": "tunnel",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 7
+              },
+              {
+                "name": "layer",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 8
+              },
+              {
+                "name": "name",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 9
+              },
+              {
+                "name": "maxspeed_forward",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 10
+              },
+              {
+                "name": "maxspeed_backward",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 11
+              },
+              {
+                "name": "maxspeed_conditional",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 12
+              },
+              {
+                "name": "maxspeed_variable",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 13
+              },
+              {
+                "name": "source_maxspeed",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 14
+              },
+              {
+                "name": "maxspeed_type",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 15
+              },
+              {
+                "name": "geometry_b64",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 16
+              }
+            ]
+          },
+          "total_chunk_count": 1,
+          "chunks": [
+            {
+              "chunk_index": 0,
+              "row_offset": 0,
+              "row_count": 3
+            }
+          ],
+          "total_row_count": 3,
+          "truncated": false
+        },
+        "result": {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 3,
+          "data_array": [
+            [
+              "19846887",
+              "21",
+              "2026-06-05 23:00:36+00:00",
+              "residential",
+              "50",
+              "yes",
+              null,
+              null,
+              null,
+              "Rusałek",
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              "AQIAAAATAAAA+MfWjj32M0BEsGDRYwlJQOB/0B8/9jNAMZtbfGUJSUBMuz2tR/YzQM6IdyVuCUlA\r\nRibg10j2M0CvsUtUbwlJQKmXKfdM9jNAy1wqgHMJSUCb3f9sUPYzQExd6AB3CUlA4rGfxVL2M0DO\r\n7RRheQlJQKYjJeJS9jNAzndLzXkJSUBHv8eqUvYzQAO5H0t6CUlA9Kz/zlH2M0DrAIi7eglJQBOK\r\nYxNP9jNAl0SstHsJSUBTZAhbR/YzQDBzy1h+CUlAQ6liz0P2M0DiFwOQfwlJQITgp2BD9jNADMXC\r\ntX8JSUAP0CKAQPYzQPTEc7aACUlA0vB3OTb2M0A/PKZJhAlJQCI+C50y9jNA69vuioUJSUA8IvDR\r\nLPYzQCYceouHCUlAr4SkBR72M0AdjxmojAlJQA=="
+            ],
+            [
+              "224814473",
+              "29",
+              "2026-03-09 09:36:22+00:00",
+              "motorway",
+              "140",
+              "yes",
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              "110 @ (Mo-Fr 06:00-18:00)",
+              null,
+              "PL:motorway",
+              null,
+              "AQIAAAArAAAAyJ0te23XM0CMxSV9EAJJQPsD5bZ91zNABUqvcg0CSUAWDimrjtczQK0kwzsKAklA\r\nfrK9ca3XM0BjQzf7AwJJQMs2JnrP1zNAnXQRlfwBSUCGBOfn4dczQEsSlVf4AUlAmuleJ/XXM0D0\r\nIPO38wFJQFzwWCIG2DNA00ITcu8BSUBcFrjhHNgzQEH3QIbpAUlAQpdw6C3YM0CRAlXt5AFJQB77\r\nWSxF2DNArNLMSd4BSUB6eCo7WNgzQA6rLpbYAUlAMw+qHnrYM0Cjj57HzQFJQNErVO2J2DNAIjn0\r\nccgBSUBMhohAmtgzQBOeK6XCAUlAY/zqYLPYM0AYwntYuQFJQAF1uXfD2DNA2urNA7MBSUD7Yd+p\r\n29gzQMe44uKoAUlAU07F1+jYM0BrUsAsowFJQPoUtlX/2DNAR4fRvZgBSUDFsYknFtkzQBE9hEyN\r\nAUlAZwP6jivZM0BwhPu3gQFJQFet8T4z2TNAE7x8Rn0BSUDkus4rQ9kzQFpzNtNzAUlAeJFThVDZ\r\nM0BScwNPawFJQCeJgJ5h2TNAyc42kl8BSUDW+zK9adkzQNhMGZNZAUlAM4VzsnnZM0DwXZTqTAFJ\r\nQARSBx6E2TNAlqe90kMBSUCnSkowi9kzQKtyRjk9AUlAAzujUpHZM0DwebQnNwFJQBCCRMma2TNA\r\noblOIy0BSUBR6tz+ptkzQMeYYN0dAUlAorzqXKzZM0CPKP45FgFJQCvxJfm22TNA5RsbywUBSUBH\r\ngl/Zu9kzQCtDZnj9AElAvc+nRMjZM0Al6gWf5gBJQJ5m3C/62TNAnoZeNYUASUC0fSMVIdozQFmu\r\nbUA6AElAS/z2GifaM0B20gzzLwBJQH/po0Ir2jNALJVcaikASUB2XENfMNozQCpmzkQiAElA/Cdu\r\nyzbaM0A6YLJMGgBJQA=="
+            ],
+            [
+              "907138970",
+              "11",
+              "2025-04-24 12:54:30+00:00",
+              "residential",
+              null,
+              null,
+              null,
+              null,
+              null,
+              "Księdza Adama Zięby",
+              "30",
+              "PL:urban",
+              null,
+              null,
+              null,
+              null,
+              "AQIAAAADAAAAc/0W+OXpM0DFDhlFxQ5JQELfJ1gt6jNAfTeC+dAOSUBqJ5TPPOozQMmaR7TTDklA"
+            ]
+          ]
+        }
+      }
+    }
+  ],
+  "rows_read_total": 3
+}

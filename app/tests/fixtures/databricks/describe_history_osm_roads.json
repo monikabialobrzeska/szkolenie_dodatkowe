@@ -1,0 +1,177 @@
+{
+  "case": "describe_history_osm_roads",
+  "captured_at": "2026-11-13T09:23:50Z",
+  "target": "SQL Statement Execution API 2.0, schema workspace.map_qa",
+  "request": {
+    "warehouse_id": "97c455ee6fb1fcb9",
+    "statement": "DESCRIBE HISTORY workspace.map_qa.osm_roads LIMIT 1",
+    "wait_timeout": "10s",
+    "on_wait_timeout": "CONTINUE",
+    "disposition": "INLINE",
+    "format": "JSON_ARRAY"
+  },
+  "exchanges": [
+    {
+      "method": "POST",
+      "path": "/api/2.0/sql/statements",
+      "http_status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "content-length": "2205",
+        "x-databricks-org-id": "7474654895662663",
+        "x-request-id": "dcab04c7-da3c-4e9b-b95d-34460a297e01"
+      },
+      "elapsed_s": 1.72,
+      "body_bytes": 2205,
+      "body": {
+        "statement_id": "01f1df43-f0ef-1fb1-bb01-f8fe8cac0e6f",
+        "status": {
+          "state": "SUCCEEDED"
+        },
+        "manifest": {
+          "format": "JSON_ARRAY",
+          "schema": {
+            "column_count": 16,
+            "columns": [
+              {
+                "name": "version",
+                "type_text": "BIGINT",
+                "type_name": "LONG",
+                "position": 0
+              },
+              {
+                "name": "timestamp",
+                "type_text": "TIMESTAMP",
+                "type_name": "TIMESTAMP",
+                "position": 1
+              },
+              {
+                "name": "userId",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 2
+              },
+              {
+                "name": "userName",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 3
+              },
+              {
+                "name": "operation",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 4
+              },
+              {
+                "name": "operationParameters",
+                "type_text": "MAP<STRING, STRING>",
+                "type_name": "MAP",
+                "position": 5
+              },
+              {
+                "name": "job",
+                "type_text": "STRUCT<jobId: STRING, jobName: STRING, jobRunId: STRING, runId: STRING, jobOwnerId: STRING, triggerType: STRING, workspaceId: STRING>",
+                "type_name": "STRUCT",
+                "position": 6
+              },
+              {
+                "name": "notebook",
+                "type_text": "STRUCT<notebookId: STRING>",
+                "type_name": "STRUCT",
+                "position": 7
+              },
+              {
+                "name": "queryHistoryStatementId",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 8
+              },
+              {
+                "name": "clusterId",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 9
+              },
+              {
+                "name": "readVersion",
+                "type_text": "BIGINT",
+                "type_name": "LONG",
+                "position": 10
+              },
+              {
+                "name": "isolationLevel",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 11
+              },
+              {
+                "name": "isBlindAppend",
+                "type_text": "BOOLEAN",
+                "type_name": "BOOLEAN",
+                "position": 12
+              },
+              {
+                "name": "operationMetrics",
+                "type_text": "MAP<STRING, STRING>",
+                "type_name": "MAP",
+                "position": 13
+              },
+              {
+                "name": "userMetadata",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 14
+              },
+              {
+                "name": "engineInfo",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 15
+              }
+            ]
+          },
+          "total_chunk_count": 1,
+          "chunks": [
+            {
+              "chunk_index": 0,
+              "row_offset": 0,
+              "row_count": 1
+            }
+          ],
+          "total_row_count": 1,
+          "truncated": false
+        },
+        "result": {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1,
+          "data_array": [
+            [
+              "1",
+              "2026-11-03T00:15:02.000Z",
+              "<redacted>",
+              "<redacted>",
+              "SET TBLPROPERTIES",
+              "{\"properties\":\"{\\\"comment\\\":\\\"OpenStreetMap contributors, ODbL 1.0; Geofabrik extract 2026-11-01T21:21:36Z. See /Volumes/workspace/map_qa/inputs/ATTRIBUTION.md\\\"}\"}",
+              null,
+              null,
+              "01f1d71b-9c51-1e94-92c5-3b5e5622da78",
+              null,
+              "0",
+              "WriteSerializable",
+              "true",
+              "{}",
+              null,
+              "Databricks-Runtime/19.11.x-aarch64-photon-scala2.13"
+            ]
+          ]
+        }
+      }
+    }
+  ],
+  "rows_read_total": 1,
+  "redactions": [
+    "columns ['userId', 'userName'] replaced by <redacted>"
+  ]
+}

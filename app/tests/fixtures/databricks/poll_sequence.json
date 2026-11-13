@@ -1,0 +1,88 @@
+{
+  "case": "poll_sequence",
+  "captured_at": "2026-11-13T09:22:18Z",
+  "target": "SQL Statement Execution API 2.0, schema workspace.map_qa",
+  "request": {
+    "warehouse_id": "97c455ee6fb1fcb9",
+    "statement": "SELECT count(*) AS photos FROM workspace.map_qa.photos",
+    "wait_timeout": "0s",
+    "on_wait_timeout": "CONTINUE",
+    "disposition": "INLINE",
+    "format": "JSON_ARRAY"
+  },
+  "exchanges": [
+    {
+      "method": "POST",
+      "path": "/api/2.0/sql/statements",
+      "http_status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "content-length": "84",
+        "x-databricks-org-id": "7474654895662663",
+        "x-request-id": "a88bf7c0-3892-4193-90df-3cbde8f20082"
+      },
+      "elapsed_s": 0.56,
+      "body_bytes": 84,
+      "body": {
+        "statement_id": "01f1df43-ba10-178c-be89-413c1c5cd93a",
+        "status": {
+          "state": "PENDING"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/2.0/sql/statements/01f1df43-ba10-178c-be89-413c1c5cd93a",
+      "http_status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "content-length": "429",
+        "x-databricks-org-id": "7474654895662663",
+        "x-request-id": "fb5a18fc-6e90-4418-9e8c-2a13b2f4995f"
+      },
+      "elapsed_s": 0.84,
+      "body_bytes": 429,
+      "body": {
+        "statement_id": "01f1df43-ba10-178c-be89-413c1c5cd93a",
+        "status": {
+          "state": "SUCCEEDED"
+        },
+        "manifest": {
+          "format": "JSON_ARRAY",
+          "schema": {
+            "column_count": 1,
+            "columns": [
+              {
+                "name": "photos",
+                "type_text": "BIGINT",
+                "type_name": "LONG",
+                "position": 0
+              }
+            ]
+          },
+          "total_chunk_count": 1,
+          "chunks": [
+            {
+              "chunk_index": 0,
+              "row_offset": 0,
+              "row_count": 1
+            }
+          ],
+          "total_row_count": 1,
+          "truncated": false
+        },
+        "result": {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1,
+          "data_array": [
+            [
+              "561"
+            ]
+          ]
+        }
+      }
+    }
+  ],
+  "rows_read_total": 1
+}

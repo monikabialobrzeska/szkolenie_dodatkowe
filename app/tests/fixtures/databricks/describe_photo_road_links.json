@@ -1,0 +1,148 @@
+{
+  "case": "describe_photo_road_links",
+  "captured_at": "2026-11-13T09:20:32Z",
+  "target": "SQL Statement Execution API 2.0, schema workspace.map_qa",
+  "request": {
+    "warehouse_id": "97c455ee6fb1fcb9",
+    "statement": "DESCRIBE TABLE workspace.map_qa.photo_road_links",
+    "wait_timeout": "10s",
+    "on_wait_timeout": "CONTINUE",
+    "disposition": "INLINE",
+    "format": "JSON_ARRAY"
+  },
+  "exchanges": [
+    {
+      "method": "POST",
+      "path": "/api/2.0/sql/statements",
+      "http_status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "content-length": "1033",
+        "x-databricks-org-id": "7474654895662663",
+        "x-request-id": "ce6d837a-15e3-476c-be73-92728e594e72"
+      },
+      "elapsed_s": 1.3,
+      "body_bytes": 1033,
+      "body": {
+        "statement_id": "01f1df43-7ae4-1da7-8680-9982cbd69b26",
+        "status": {
+          "state": "SUCCEEDED"
+        },
+        "manifest": {
+          "format": "JSON_ARRAY",
+          "schema": {
+            "column_count": 3,
+            "columns": [
+              {
+                "name": "col_name",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 0
+              },
+              {
+                "name": "data_type",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 1
+              },
+              {
+                "name": "comment",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 2
+              }
+            ]
+          },
+          "total_chunk_count": 1,
+          "chunks": [
+            {
+              "chunk_index": 0,
+              "row_offset": 0,
+              "row_count": 14
+            }
+          ],
+          "total_row_count": 14,
+          "truncated": false
+        },
+        "result": {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 14,
+          "data_array": [
+            [
+              "photo_id",
+              "string",
+              null
+            ],
+            [
+              "osm_way_id",
+              "int",
+              null
+            ],
+            [
+              "overture_id",
+              "string",
+              null
+            ],
+            [
+              "distance_m",
+              "double",
+              null
+            ],
+            [
+              "way_bearing",
+              "double",
+              null
+            ],
+            [
+              "bearing_diff",
+              "double",
+              null
+            ],
+            [
+              "directed_bearing_diff",
+              "double",
+              null
+            ],
+            [
+              "overture_distance_m",
+              "double",
+              null
+            ],
+            [
+              "osm_candidate_count",
+              "int",
+              null
+            ],
+            [
+              "match_method",
+              "string",
+              null
+            ],
+            [
+              "candidate_flags",
+              "string",
+              null
+            ],
+            [
+              "_rescued_data",
+              "string",
+              null
+            ],
+            [
+              "# Clustering Information",
+              "",
+              ""
+            ],
+            [
+              "# col_name",
+              "data_type",
+              "comment"
+            ]
+          ]
+        }
+      }
+    }
+  ],
+  "rows_read_total": 14
+}

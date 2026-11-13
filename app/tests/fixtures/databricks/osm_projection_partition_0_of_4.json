@@ -1,0 +1,189 @@
+{
+  "case": "osm_projection_partition_0_of_4",
+  "captured_at": "2026-11-13T09:23:11Z",
+  "target": "SQL Statement Execution API 2.0, schema workspace.map_qa",
+  "request": {
+    "warehouse_id": "97c455ee6fb1fcb9",
+    "statement": "SELECT osm_id, osm_version, osm_timestamp, highway, maxspeed, oneway, bridge, tunnel, layer, name, get_json_object(tags, \"$['maxspeed:forward']\") AS maxspeed_forward, get_json_object(tags, \"$['maxspeed:backward']\") AS maxspeed_backward, get_json_object(tags, \"$['maxspeed:conditional']\") AS maxspeed_conditional, get_json_object(tags, \"$['maxspeed:variable']\") AS maxspeed_variable, get_json_object(tags, \"$['source:maxspeed']\") AS source_maxspeed, get_json_object(tags, \"$['maxspeed:type']\") AS maxspeed_type, base64(geometry) AS geometry_b64 FROM workspace.map_qa.osm_roads WHERE pmod(osm_id, 4) = 0 ORDER BY osm_id",
+    "wait_timeout": "10s",
+    "on_wait_timeout": "CONTINUE",
+    "disposition": "INLINE",
+    "format": "JSON_ARRAY"
+  },
+  "exchanges": [
+    {
+      "method": "POST",
+      "path": "/api/2.0/sql/statements",
+      "http_status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "x-databricks-org-id": "7474654895662663",
+        "x-request-id": "c4b89cfd-5f78-4e5a-a4c3-be3ede1a1981"
+      },
+      "elapsed_s": 4.56,
+      "body_bytes": 6209143,
+      "body": {
+        "statement_id": "01f1df43-da0a-16a2-adde-de9fb6cb3514",
+        "status": {
+          "state": "SUCCEEDED"
+        },
+        "manifest": {
+          "format": "JSON_ARRAY",
+          "schema": {
+            "column_count": 17,
+            "columns": [
+              {
+                "name": "osm_id",
+                "type_text": "BIGINT",
+                "type_name": "LONG",
+                "position": 0
+              },
+              {
+                "name": "osm_version",
+                "type_text": "BIGINT",
+                "type_name": "LONG",
+                "position": 1
+              },
+              {
+                "name": "osm_timestamp",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 2
+              },
+              {
+                "name": "highway",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 3
+              },
+              {
+                "name": "maxspeed",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 4
+              },
+              {
+                "name": "oneway",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 5
+              },
+              {
+                "name": "bridge",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 6
+              },
+              {
+                "name": "tunnel",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 7
+              },
+              {
+                "name": "layer",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 8
+              },
+              {
+                "name": "name",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 9
+              },
+              {
+                "name": "maxspeed_forward",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 10
+              },
+              {
+                "name": "maxspeed_backward",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 11
+              },
+              {
+                "name": "maxspeed_conditional",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 12
+              },
+              {
+                "name": "maxspeed_variable",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 13
+              },
+              {
+                "name": "source_maxspeed",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 14
+              },
+              {
+                "name": "maxspeed_type",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 15
+              },
+              {
+                "name": "geometry_b64",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 16
+              }
+            ]
+          },
+          "total_chunk_count": 2,
+          "chunks": [
+            {
+              "chunk_index": 0,
+              "row_offset": 0,
+              "row_count": 24576
+            },
+            {
+              "chunk_index": 1,
+              "row_offset": 24576,
+              "row_count": 334
+            }
+          ],
+          "total_row_count": 24910,
+          "truncated": false
+        },
+        "result": {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 24576,
+          "next_chunk_index": 1,
+          "next_chunk_internal_link": "/api/2.0/sql/statements/01f1df43-da0a-16a2-adde-de9fb6cb3514/result/chunks/1",
+          "data_array": [],
+          "data_array_rows_received": 24576,
+          "data_array_truncated_in_fixture": true
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/2.0/sql/statements/01f1df43-da0a-16a2-adde-de9fb6cb3514/result/chunks/1",
+      "http_status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "x-databricks-org-id": "7474654895662663",
+        "x-request-id": "b2dd673c-4396-4455-b1bc-2893f35defc0"
+      },
+      "elapsed_s": 0.95,
+      "body_bytes": 76857,
+      "body": {
+        "chunk_index": 1,
+        "row_offset": 24576,
+        "row_count": 334,
+        "data_array": [],
+        "data_array_rows_received": 334,
+        "data_array_truncated_in_fixture": true
+      }
+    }
+  ],
+  "rows_read_total": 24910
+}

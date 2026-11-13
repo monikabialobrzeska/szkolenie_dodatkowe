@@ -1,0 +1,163 @@
+{
+  "case": "describe_overture_segments",
+  "captured_at": "2026-11-13T09:20:29Z",
+  "target": "SQL Statement Execution API 2.0, schema workspace.map_qa",
+  "request": {
+    "warehouse_id": "97c455ee6fb1fcb9",
+    "statement": "DESCRIBE TABLE workspace.map_qa.overture_segments",
+    "wait_timeout": "10s",
+    "on_wait_timeout": "CONTINUE",
+    "disposition": "INLINE",
+    "format": "JSON_ARRAY"
+  },
+  "exchanges": [
+    {
+      "method": "POST",
+      "path": "/api/2.0/sql/statements",
+      "http_status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "content-length": "2029",
+        "x-databricks-org-id": "7474654895662663",
+        "x-request-id": "d6247607-c4cb-42be-b1f3-18e4ef4b60c3"
+      },
+      "elapsed_s": 1.38,
+      "body_bytes": 2029,
+      "body": {
+        "statement_id": "01f1df43-7944-1176-9f1c-4aba687a0095",
+        "status": {
+          "state": "SUCCEEDED"
+        },
+        "manifest": {
+          "format": "JSON_ARRAY",
+          "schema": {
+            "column_count": 3,
+            "columns": [
+              {
+                "name": "col_name",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 0
+              },
+              {
+                "name": "data_type",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 1
+              },
+              {
+                "name": "comment",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 2
+              }
+            ]
+          },
+          "total_chunk_count": 1,
+          "chunks": [
+            {
+              "chunk_index": 0,
+              "row_offset": 0,
+              "row_count": 17
+            }
+          ],
+          "total_row_count": 17,
+          "truncated": false
+        },
+        "result": {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 17,
+          "data_array": [
+            [
+              "id",
+              "string",
+              null
+            ],
+            [
+              "geometry",
+              "binary",
+              null
+            ],
+            [
+              "class",
+              "string",
+              null
+            ],
+            [
+              "subclass",
+              "string",
+              null
+            ],
+            [
+              "name",
+              "string",
+              null
+            ],
+            [
+              "sources",
+              "array<struct<property:string,dataset:string,license:string,record_id:string,update_time:string,confidence:double,between:array<double>,provider:string,resource:string,version:string>>",
+              null
+            ],
+            [
+              "connectors",
+              "array<struct<connector_id:string,at:double>>",
+              null
+            ],
+            [
+              "speed_limits",
+              "array<struct<min_speed:struct<value:int,unit:string>,max_speed:struct<value:int,unit:string>,is_max_speed_variable:boolean,when:struct<during:string,heading:string,using:array<string>,recognized:array<string>,mode:array<string>,vehicle:array<struct<dimension:string,comparison:string,value:double,unit:string>>>,between:array<double>>>",
+              null
+            ],
+            [
+              "road_surface",
+              "array<struct<value:string,between:array<double>>>",
+              null
+            ],
+            [
+              "road_flags",
+              "array<struct<values:array<string>,between:array<double>>>",
+              null
+            ],
+            [
+              "access_restrictions",
+              "array<struct<access_type:string,when:struct<during:string,heading:string,using:array<string>,recognized:array<string>,mode:array<string>,vehicle:array<struct<dimension:string,comparison:string,value:double,unit:string>>>,between:array<double>>>",
+              null
+            ],
+            [
+              "level_rules",
+              "array<struct<value:int,between:array<double>>>",
+              null
+            ],
+            [
+              "bbox",
+              "struct<xmin:double,xmax:double,ymin:double,ymax:double>",
+              null
+            ],
+            [
+              "version",
+              "int",
+              null
+            ],
+            [
+              "_rescued_data",
+              "string",
+              null
+            ],
+            [
+              "# Clustering Information",
+              "",
+              ""
+            ],
+            [
+              "# col_name",
+              "data_type",
+              "comment"
+            ]
+          ]
+        }
+      }
+    }
+  ],
+  "rows_read_total": 17
+}

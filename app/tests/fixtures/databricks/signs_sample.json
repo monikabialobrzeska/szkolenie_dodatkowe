@@ -1,0 +1,129 @@
+{
+  "case": "signs_sample",
+  "captured_at": "2026-11-13T09:20:41Z",
+  "target": "SQL Statement Execution API 2.0, schema workspace.map_qa",
+  "request": {
+    "warehouse_id": "97c455ee6fb1fcb9",
+    "statement": "SELECT id, object_value, first_seen_at, last_seen_at, image_ids, source_url, base64(geometry) AS geometry_b64 FROM workspace.map_qa.traffic_signs ORDER BY id LIMIT 3",
+    "wait_timeout": "10s",
+    "on_wait_timeout": "CONTINUE",
+    "disposition": "INLINE",
+    "format": "JSON_ARRAY"
+  },
+  "exchanges": [
+    {
+      "method": "POST",
+      "path": "/api/2.0/sql/statements",
+      "http_status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "content-length": "1723",
+        "x-databricks-org-id": "7474654895662663",
+        "x-request-id": "0c687c7d-2952-4a12-aaf9-10139c764604"
+      },
+      "elapsed_s": 1.69,
+      "body_bytes": 1723,
+      "body": {
+        "statement_id": "01f1df43-8083-1364-b3a8-f8bbd163a0ba",
+        "status": {
+          "state": "SUCCEEDED"
+        },
+        "manifest": {
+          "format": "JSON_ARRAY",
+          "schema": {
+            "column_count": 7,
+            "columns": [
+              {
+                "name": "id",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 0
+              },
+              {
+                "name": "object_value",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 1
+              },
+              {
+                "name": "first_seen_at",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 2
+              },
+              {
+                "name": "last_seen_at",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 3
+              },
+              {
+                "name": "image_ids",
+                "type_text": "ARRAY<STRING>",
+                "type_name": "ARRAY",
+                "position": 4
+              },
+              {
+                "name": "source_url",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 5
+              },
+              {
+                "name": "geometry_b64",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 6
+              }
+            ]
+          },
+          "total_chunk_count": 1,
+          "chunks": [
+            {
+              "chunk_index": 0,
+              "row_offset": 0,
+              "row_count": 3
+            }
+          ],
+          "total_row_count": 3,
+          "truncated": false
+        },
+        "result": {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 3,
+          "data_array": [
+            [
+              "1002083868307817",
+              "regulatory--maximum-speed-limit-80--g1",
+              "2024-07-05T16:58:57+0000",
+              "2024-07-05T16:58:57+0000",
+              "[\"1233080174738420\",\"453995684116667\",\"1441944903162926\",\"1173914813845774\"]",
+              "https://www.mapillary.com/app/?mapFeatureId=1002083868307817",
+              "AQEAAAADllzF4uMzQJdTAmIS+khA"
+            ],
+            [
+              "1002083881641149",
+              "regulatory--maximum-speed-limit-80--g1",
+              "2024-07-05T16:58:58+0000",
+              "2024-07-05T16:58:58+0000",
+              "[\"453995684116667\",\"1441944903162926\",\"1173914813845774\"]",
+              "https://www.mapillary.com/app/?mapFeatureId=1002083881641149",
+              "AQEAAABQ4nMn2OMzQCDvVSsT+khA"
+            ],
+            [
+              "1002363373868199",
+              "regulatory--maximum-speed-limit-70--g1",
+              "2018-08-07T11:01:11+0000",
+              "2018-08-07T11:01:11+0000",
+              "[\"484492402807781\",\"2966463386970387\"]",
+              "https://www.mapillary.com/app/?mapFeatureId=1002363373868199",
+              "AQEAAAAYsrrVcwo0QIE+kSdJ/0hA"
+            ]
+          ]
+        }
+      }
+    }
+  ],
+  "rows_read_total": 3
+}

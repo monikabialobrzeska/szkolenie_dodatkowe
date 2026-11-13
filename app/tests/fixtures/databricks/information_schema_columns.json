@@ -1,0 +1,508 @@
+{
+  "case": "information_schema_columns",
+  "captured_at": "2026-11-13T09:23:17Z",
+  "target": "SQL Statement Execution API 2.0, schema workspace.map_qa",
+  "request": {
+    "warehouse_id": "97c455ee6fb1fcb9",
+    "statement": "SELECT table_name, column_name, data_type FROM workspace.information_schema.columns WHERE table_schema = 'map_qa' ORDER BY table_name, ordinal_position",
+    "wait_timeout": "10s",
+    "on_wait_timeout": "CONTINUE",
+    "disposition": "INLINE",
+    "format": "JSON_ARRAY"
+  },
+  "exchanges": [
+    {
+      "method": "POST",
+      "path": "/api/2.0/sql/statements",
+      "http_status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "content-length": "3767",
+        "x-databricks-org-id": "7474654895662663",
+        "x-request-id": "2f3c4b7a-1ba0-4826-92bb-ef7ad3a0835a"
+      },
+      "elapsed_s": 2.22,
+      "body_bytes": 3767,
+      "body": {
+        "statement_id": "01f1df43-dda5-1d19-afed-2a786d53975b",
+        "status": {
+          "state": "SUCCEEDED"
+        },
+        "manifest": {
+          "format": "JSON_ARRAY",
+          "schema": {
+            "column_count": 3,
+            "columns": [
+              {
+                "name": "table_name",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 0
+              },
+              {
+                "name": "column_name",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 1
+              },
+              {
+                "name": "data_type",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 2
+              }
+            ]
+          },
+          "total_chunk_count": 1,
+          "chunks": [
+            {
+              "chunk_index": 0,
+              "row_offset": 0,
+              "row_count": 86
+            }
+          ],
+          "total_row_count": 86,
+          "truncated": false
+        },
+        "result": {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 86,
+          "data_array": [
+            [
+              "osm_roads",
+              "osm_id",
+              "LONG"
+            ],
+            [
+              "osm_roads",
+              "osm_version",
+              "LONG"
+            ],
+            [
+              "osm_roads",
+              "osm_timestamp",
+              "STRING"
+            ],
+            [
+              "osm_roads",
+              "node_ids",
+              "ARRAY"
+            ],
+            [
+              "osm_roads",
+              "start_node",
+              "LONG"
+            ],
+            [
+              "osm_roads",
+              "end_node",
+              "LONG"
+            ],
+            [
+              "osm_roads",
+              "boundary_crossing",
+              "BOOLEAN"
+            ],
+            [
+              "osm_roads",
+              "tags",
+              "STRING"
+            ],
+            [
+              "osm_roads",
+              "highway",
+              "STRING"
+            ],
+            [
+              "osm_roads",
+              "maxspeed",
+              "STRING"
+            ],
+            [
+              "osm_roads",
+              "surface",
+              "STRING"
+            ],
+            [
+              "osm_roads",
+              "lanes",
+              "STRING"
+            ],
+            [
+              "osm_roads",
+              "oneway",
+              "STRING"
+            ],
+            [
+              "osm_roads",
+              "lit",
+              "STRING"
+            ],
+            [
+              "osm_roads",
+              "sidewalk",
+              "STRING"
+            ],
+            [
+              "osm_roads",
+              "sidewalk:left",
+              "STRING"
+            ],
+            [
+              "osm_roads",
+              "sidewalk:right",
+              "STRING"
+            ],
+            [
+              "osm_roads",
+              "junction",
+              "STRING"
+            ],
+            [
+              "osm_roads",
+              "ref",
+              "STRING"
+            ],
+            [
+              "osm_roads",
+              "name",
+              "STRING"
+            ],
+            [
+              "osm_roads",
+              "access",
+              "STRING"
+            ],
+            [
+              "osm_roads",
+              "motor_vehicle",
+              "STRING"
+            ],
+            [
+              "osm_roads",
+              "bridge",
+              "STRING"
+            ],
+            [
+              "osm_roads",
+              "tunnel",
+              "STRING"
+            ],
+            [
+              "osm_roads",
+              "layer",
+              "STRING"
+            ],
+            [
+              "osm_roads",
+              "geometry",
+              "BINARY"
+            ],
+            [
+              "osm_roads",
+              "_rescued_data",
+              "STRING"
+            ],
+            [
+              "overture_segments",
+              "id",
+              "STRING"
+            ],
+            [
+              "overture_segments",
+              "geometry",
+              "BINARY"
+            ],
+            [
+              "overture_segments",
+              "class",
+              "STRING"
+            ],
+            [
+              "overture_segments",
+              "subclass",
+              "STRING"
+            ],
+            [
+              "overture_segments",
+              "name",
+              "STRING"
+            ],
+            [
+              "overture_segments",
+              "sources",
+              "ARRAY"
+            ],
+            [
+              "overture_segments",
+              "connectors",
+              "ARRAY"
+            ],
+            [
+              "overture_segments",
+              "speed_limits",
+              "ARRAY"
+            ],
+            [
+              "overture_segments",
+              "road_surface",
+              "ARRAY"
+            ],
+            [
+              "overture_segments",
+              "road_flags",
+              "ARRAY"
+            ],
+            [
+              "overture_segments",
+              "access_restrictions",
+              "ARRAY"
+            ],
+            [
+              "overture_segments",
+              "level_rules",
+              "ARRAY"
+            ],
+            [
+              "overture_segments",
+              "bbox",
+              "STRUCT"
+            ],
+            [
+              "overture_segments",
+              "version",
+              "INT"
+            ],
+            [
+              "overture_segments",
+              "_rescued_data",
+              "STRING"
+            ],
+            [
+              "photo_road_links",
+              "photo_id",
+              "STRING"
+            ],
+            [
+              "photo_road_links",
+              "osm_way_id",
+              "INT"
+            ],
+            [
+              "photo_road_links",
+              "overture_id",
+              "STRING"
+            ],
+            [
+              "photo_road_links",
+              "distance_m",
+              "DOUBLE"
+            ],
+            [
+              "photo_road_links",
+              "way_bearing",
+              "DOUBLE"
+            ],
+            [
+              "photo_road_links",
+              "bearing_diff",
+              "DOUBLE"
+            ],
+            [
+              "photo_road_links",
+              "directed_bearing_diff",
+              "DOUBLE"
+            ],
+            [
+              "photo_road_links",
+              "overture_distance_m",
+              "DOUBLE"
+            ],
+            [
+              "photo_road_links",
+              "osm_candidate_count",
+              "INT"
+            ],
+            [
+              "photo_road_links",
+              "match_method",
+              "STRING"
+            ],
+            [
+              "photo_road_links",
+              "candidate_flags",
+              "STRING"
+            ],
+            [
+              "photo_road_links",
+              "_rescued_data",
+              "STRING"
+            ],
+            [
+              "photos",
+              "photo_id",
+              "STRING"
+            ],
+            [
+              "photos",
+              "filename",
+              "STRING"
+            ],
+            [
+              "photos",
+              "source",
+              "STRING"
+            ],
+            [
+              "photos",
+              "url",
+              "STRING"
+            ],
+            [
+              "photos",
+              "source_url",
+              "STRING"
+            ],
+            [
+              "photos",
+              "longitude",
+              "DOUBLE"
+            ],
+            [
+              "photos",
+              "latitude",
+              "DOUBLE"
+            ],
+            [
+              "photos",
+              "heading",
+              "DOUBLE"
+            ],
+            [
+              "photos",
+              "captured_at",
+              "TIMESTAMP"
+            ],
+            [
+              "photos",
+              "sequence",
+              "STRING"
+            ],
+            [
+              "photos",
+              "license",
+              "STRING"
+            ],
+            [
+              "photos",
+              "license_url",
+              "STRING"
+            ],
+            [
+              "photos",
+              "author",
+              "STRING"
+            ],
+            [
+              "photos",
+              "source_sha256",
+              "STRING"
+            ],
+            [
+              "photos",
+              "sha256",
+              "STRING"
+            ],
+            [
+              "photos",
+              "bytes",
+              "INT"
+            ],
+            [
+              "photos",
+              "transformation",
+              "STRING"
+            ],
+            [
+              "photos",
+              "horizontal_accuracy_m",
+              "DOUBLE"
+            ],
+            [
+              "photos",
+              "is_panorama",
+              "BOOLEAN"
+            ],
+            [
+              "photos",
+              "width",
+              "INT"
+            ],
+            [
+              "photos",
+              "height",
+              "INT"
+            ],
+            [
+              "photos",
+              "_rescued_data",
+              "STRING"
+            ],
+            [
+              "traffic_signs",
+              "first_seen_at",
+              "STRING"
+            ],
+            [
+              "traffic_signs",
+              "id",
+              "STRING"
+            ],
+            [
+              "traffic_signs",
+              "image_ids",
+              "ARRAY"
+            ],
+            [
+              "traffic_signs",
+              "last_seen_at",
+              "STRING"
+            ],
+            [
+              "traffic_signs",
+              "license",
+              "STRING"
+            ],
+            [
+              "traffic_signs",
+              "object_type",
+              "STRING"
+            ],
+            [
+              "traffic_signs",
+              "object_value",
+              "STRING"
+            ],
+            [
+              "traffic_signs",
+              "source",
+              "STRING"
+            ],
+            [
+              "traffic_signs",
+              "source_url",
+              "STRING"
+            ],
+            [
+              "traffic_signs",
+              "geometry",
+              "BINARY"
+            ]
+          ]
+        }
+      }
+    }
+  ],
+  "rows_read_total": 86
+}

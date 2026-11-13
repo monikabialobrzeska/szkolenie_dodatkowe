@@ -1,0 +1,40 @@
+{
+  "case": "failed_missing_table",
+  "captured_at": "2026-11-13T09:20:43Z",
+  "target": "SQL Statement Execution API 2.0, schema workspace.map_qa",
+  "request": {
+    "warehouse_id": "97c455ee6fb1fcb9",
+    "statement": "SELECT count(*) FROM workspace.map_qa.no_such_table",
+    "wait_timeout": "10s",
+    "on_wait_timeout": "CONTINUE",
+    "disposition": "INLINE",
+    "format": "JSON_ARRAY"
+  },
+  "exchanges": [
+    {
+      "method": "POST",
+      "path": "/api/2.0/sql/statements",
+      "http_status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "content-length": "659",
+        "x-databricks-org-id": "7474654895662663",
+        "x-request-id": "5c9c8b57-4c03-4b1b-ae91-db5503955df3"
+      },
+      "elapsed_s": 0.94,
+      "body_bytes": 659,
+      "body": {
+        "statement_id": "01f1df43-8181-10ae-9c39-153b62ae3c3c",
+        "status": {
+          "state": "FAILED",
+          "error": {
+            "error_code": "BAD_REQUEST",
+            "message": "[TABLE_OR_VIEW_NOT_FOUND] The table or view `workspace`.`map_qa`.`no_such_table` cannot be found. Verify the spelling and correctness of the schema and catalog.\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 1 pos 21"
+          },
+          "sql_state": "42P01"
+        }
+      }
+    }
+  ],
+  "rows_read_total": 0
+}
