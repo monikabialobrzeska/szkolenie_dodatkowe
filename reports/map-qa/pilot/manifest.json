@@ -1,0 +1,140 @@
+{
+  "version": 1,
+  "models": [
+    "typesafe/jev-1.14",
+    "openai/gpt-6-luna-decisions",
+    "openai/gpt-6-luna"
+  ],
+  "budget_per_model": 25,
+  "calls_planned": 60,
+  "threshold": 0.7,
+  "image": {
+    "min_side": 320,
+    "max_side": 1600,
+    "resample": "LANCZOS",
+    "jpeg_quality": 92,
+    "pillow": "12.0.0"
+  },
+  "items": [
+    {
+      "item_id": "mapillary_227382599193004",
+      "crop": "signs/crops/mapillary_227382599193004.jpg",
+      "crop_sha256": "641531cf4f6f95b8e59485918c8f85d252d111f627e40a64afc20ce05891dc6e",
+      "sequence": "ryj2vtX1YlGKLompKPZVRw"
+    },
+    {
+      "item_id": "mapillary_286653834319478",
+      "crop": "signs/crops/mapillary_286653834319478.jpg",
+      "crop_sha256": "4d3351372d8622a39beaab8f0987ba5ade664b5d7a7d05d4a78b2507fef534ba",
+      "sequence": "8c2BJEOndxH40DPGgjFLNr"
+    },
+    {
+      "item_id": "mapillary_493318355211393",
+      "crop": "signs/crops/mapillary_493318355211393.jpg",
+      "crop_sha256": "1dd2e9c95c32d8a07add4183dc58c2431021085d8c8a2e7e6147cf3e874fb36a",
+      "sequence": "umf1ijvkg2eqkkdyekbsxy"
+    },
+    {
+      "item_id": "mapillary_733412486232666",
+      "crop": "signs/crops/mapillary_733412486232666.jpg",
+      "crop_sha256": "5288f052329fcc574db49dd6247783f4a234c8e7bd0b3ff919d8dab26bc4e04e",
+      "sequence": "dBpCmaAE8rsf359c61hLNQ"
+    },
+    {
+      "item_id": "mapillary_506414974046536",
+      "crop": "signs/crops/mapillary_506414974046536.jpg",
+      "crop_sha256": "6207c93fba063cb0121f9f7bcffd741fac51778e9a71dc7da0eb670ed54968cc",
+      "sequence": "lCZtFGaJEE5IuMP9Z5BleA"
+    },
+    {
+      "item_id": "mapillary_902030810904848",
+      "crop": "signs/crops/mapillary_902030810904848.jpg",
+      "crop_sha256": "053319e56fb738346e4d6b161d8bd03e1d5e3a6397db9b92772199fd70238bad",
+      "sequence": "mlva79LyBJsWZeMnR4ftrk"
+    },
+    {
+      "item_id": "mapillary_924782818339099",
+      "crop": "signs/crops/mapillary_924782818339099.jpg",
+      "crop_sha256": "76836736e3870250666b1646832253e4a3a50a500578e5fb87c3acff506a336b",
+      "sequence": "ET4a_hgxR0CqyDjHYp8B5A"
+    },
+    {
+      "item_id": "mapillary_751315475556083",
+      "crop": "signs/crops/mapillary_751315475556083.jpg",
+      "crop_sha256": "93c6d0cd5f2660a122ddfa7c1ff1ffb3d7d126fc41e0b3fd2a6d523284080f64",
+      "sequence": "FSj1nkj-BCyD0Qc3GTsQSg"
+    },
+    {
+      "item_id": "mapillary_1428012997566511",
+      "crop": "signs/crops/mapillary_1428012997566511.jpg",
+      "crop_sha256": "44ab469b375f4a323f0c671a97872d9ed49c130a032385ac0cc8c5c8dbdfd84d",
+      "sequence": "nGjNE9Cx6opKeC114WrADw"
+    },
+    {
+      "item_id": "mapillary_149632027129116",
+      "crop": "signs/crops/mapillary_149632027129116.jpg",
+      "crop_sha256": "2ba76512b203b71b20208ebe1eb1a41299320f060474add3d4496885aaece406",
+      "sequence": "DNWfmfddS_6Falg9QnDIrg"
+    },
+    {
+      "item_id": "mapillary_512030746965559",
+      "crop": "signs/crops/mapillary_512030746965559.jpg",
+      "crop_sha256": "f1b63cc1ec5245a52763524f853d730d2ed2f088a4ce8b16067c6b224ce3686e",
+      "sequence": "ALUTj3ivHeK5OpC4bgotrz"
+    },
+    {
+      "item_id": "mapillary_555232039787307",
+      "crop": "signs/crops/mapillary_555232039787307.jpg",
+      "crop_sha256": "81ae468243eb521e51ee274a4dff113366cb14903a0d4c62622735a7da93b5d8",
+      "sequence": "XTJPlcq5EW1OCmfNSUrMsx"
+    },
+    {
+      "item_id": "mapillary_3891016664466510",
+      "crop": "signs/crops/mapillary_3891016664466510.jpg",
+      "crop_sha256": "7923bafefef1f3ab9227a88805bdd2b7e530eeb84fcb531394a93892d25dd99c",
+      "sequence": "Yq29siCSG1LH4hulBRxXAr"
+    },
+    {
+      "item_id": "mapillary_482638789734160",
+      "crop": "signs/crops/mapillary_482638789734160.jpg",
+      "crop_sha256": "ae594ad14fdd4a3ea1fcef60b6b51490df0d6c7778b2b374bc8e438bf1e0e8ef",
+      "sequence": "mxhaeezx14c60viqyd4pss"
+    },
+    {
+      "item_id": "mapillary_848094790603316",
+      "crop": "signs/crops/mapillary_848094790603316.jpg",
+      "crop_sha256": "adcfbbf6ef07eafd0a4c32b32b16e3926a40c5e6211e7c50d4da1b9425093a7e",
+      "sequence": "BLDthk43S07on8axXlmRKP"
+    },
+    {
+      "item_id": "mapillary_915915556657317",
+      "crop": "signs/crops/mapillary_915915556657317.jpg",
+      "crop_sha256": "349d3ec422b4b218b20361344a1f5804e8dec54812e0c6ba4db49900b8b46e08",
+      "sequence": "28Nf4kdXJKhTbnRWAGBm5Y"
+    },
+    {
+      "item_id": "mapillary_2547645098874962",
+      "crop": "signs/crops/mapillary_2547645098874962.jpg",
+      "crop_sha256": "ab2f5a08a8d005274a693a5af1186d1a77ec0444c8a43531f55ea7b110d6ba8c",
+      "sequence": "vqgvu1xzzu2prpkm5q5o09"
+    },
+    {
+      "item_id": "mapillary_2041435102902376",
+      "crop": "signs/crops/mapillary_2041435102902376.jpg",
+      "crop_sha256": "82c3e3e68ace5fa6b8cfacb54e189b086e783339bbd9ef4913a12d2bfa8998e4",
+      "sequence": "m6hYfc4duP705SRHn8ODQF"
+    },
+    {
+      "item_id": "mapillary_2413300392429744",
+      "crop": "signs/crops/mapillary_2413300392429744.jpg",
+      "crop_sha256": "0dc551f29ba40a900c03b84362f7111f0488082f12874791061cfe65a52a2f8c",
+      "sequence": "Il9BbWXjncPhxwKrS3o5eU"
+    },
+    {
+      "item_id": "mapillary_940500342204329",
+      "crop": "signs/crops/mapillary_940500342204329.jpg",
+      "crop_sha256": "52136aeddf6809c5a94a01a9a442b63bceec67cd81fd3d2d83ff1548684f9605",
+      "sequence": "V81Zqw5ih2p3XoteCbz7YS"
+    }
+  ]
+}

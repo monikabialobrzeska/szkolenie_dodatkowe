@@ -1,0 +1,52 @@
+{
+  "http_status": 200,
+  "headers": {
+    "content-type": "application/json",
+    "x-generation-id": "gen-dec-1794583307-2tHggaX63Idtkl4wfxrj"
+  },
+  "elapsed_s": 0.33,
+  "body": {
+    "model": "typesafe/jev-1.14-20261014",
+    "answers": {
+      "speed_limit": {
+        "type": "choice",
+        "choice": "40",
+        "probabilities": {
+          "5": 0,
+          "10": 0,
+          "15": 0,
+          "20": 0,
+          "25": 0,
+          "30": 0,
+          "40": 0.9,
+          "50": 0,
+          "60": 0,
+          "70": 0,
+          "80": 0,
+          "90": 0,
+          "100": 0,
+          "110": 0,
+          "120": 0,
+          "130": 0,
+          "140": 0,
+          "none": 0.08,
+          "unreadable": 0.02
+        },
+        "confidence": 0.89
+      }
+    },
+    "usage": {
+      "input_tokens": 1051,
+      "output_tokens": 175,
+      "cost": 0,
+      "is_byok": true,
+      "cost_details": {
+        "upstream_inference_cost": 4.4142e-05,
+        "upstream_inference_prompt_cost": 4.4142e-05,
+        "upstream_inference_completions_cost": 0
+      }
+    },
+    "id": "gen-dec-1794583307-2tHggaX63Idtkl4wfxrj",
+    "provider": "TypeSafe"
+  }
+}

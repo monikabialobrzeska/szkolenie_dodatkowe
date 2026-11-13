@@ -55,9 +55,16 @@ Definition of done for Stage 1 = ADR-000 §10 and ADR-003 §8 technical acceptan
 | S3-2 | ADR-005 | request format per model, neutral question, answer schema (value / `none` / `unreadable` + probability), abstention threshold (fixed before evaluation), tier-2 uncertainty rule (PRD open question 9), cache key, budget counter, sample manifest (stratified, split by sequence), label isolation (AC-37) | ADR accepted | ✅ ADR-005 |
 | S3-3 | TDD: reader | client + tiers with fake transport from S3-1 captures: budget per model, no retries, 40 s timeout, cache, errors ≠ answers | unit tests green, no network | ✅ `b3574c3` |
 | S3-4 | TDD: evaluator + report | metrics over `certain` labels with denominators, detector baseline, per-tier and end-to-end, side-by-side table | unit tests green | ✅ `048baae` (`mapqa pilot plan/run/evaluate`) |
-| S3-5 | Pilot run | manifest shown → **user confirms** → Part A (3 × 20) and Part B (chain) | report written; calls ≤ 25 per model | |
+| S3-5 | Pilot run | manifest shown → **user confirms** → Part A (3 × 20) and Part B (chain) | report written; calls ≤ 25 per model | ⏸ in progress (see below) |
 | S3-6 | QA + review | report checked against labels by hand on a few items; consistency review of PRD/ADR | evidence recorded | |
 | S3-7 | Docs | README, `app/AGENTS.md`, plan status | docs match `--help` | |
+
+### S3-5 status (2026-11-13, paused)
+
+- Manifest confirmed by the user (code `91ea2f224347`, image settings 320–1600 px). Run `20261113T152144Z`: Jev read 5 crops (in `reports/map-qa/pilot/cache/`, ~$0.00023), then rejected the full frame `mapillary_902030810904848` sent at **1600×900** px with HTTP 400 `Invalid image dimensions.`; the paid loop stopped (AC-32). Luna Decisions and Luna: not started.
+- Earlier: 155×192 px was also rejected; every accepted image so far was 320–396 px. The provider's limits are not documented.
+- **Next step (needs a user decision):** set a maximum side for the two full-frame negatives (proposal: ≤ 768 px), or probe the limit first, or choose different negatives; then `mapqa pilot plan` (new confirm code) → user confirms → `mapqa pilot run --confirm <code>` (cached readings are reused at no cost) → `mapqa pilot evaluate`.
+- Full call history incl. the 3 rejected (free) calls: `reports/map-qa/pilot/calls.jsonl`.
 
 ## Out of scope
 
