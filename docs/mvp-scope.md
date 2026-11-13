@@ -95,7 +95,7 @@ The MVP is a **command-line tool with a read-only static viewer** (item 8a, ADR-
 8. **Outputs:** review queue as CSV and GeoJSON (opens in QGIS), summary report in Markdown, and a run summary in JSON.
 8a. **Read-only viewer** (added 2026-11-12): `viewer.html` next to the outputs — summary, filterable candidate table, map, candidate detail with evidence. English UI. See ADR-003.
 
-### Stage 2 — Databricks as a second source
+### Stage 2 — Databricks as a second source (built 2026-11-13, ADR-004; parity test green)
 
 9. Implement `databricks` in the same configuration: read-only access to the five `workspace.map_qa` tables.
 10. **Parity test:** the same checks on `files` and on `databricks` must give identical row counts and an identical queue (PRD AC-05b). This proves the source layer does not change results.

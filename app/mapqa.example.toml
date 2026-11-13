@@ -4,14 +4,15 @@
 # Never put tokens or passwords here — secrets live only in environment variables.
 
 [source]
-# files | databricks | public_api   (only "files" is implemented in Stage 1)
+# files | databricks | public_api   (public_api is not implemented yet)
 kind = "files"
 
 [source.files]
 data_dir = "../course-materials/exercise-data/map-qa"
 
 [source.databricks]
-# Stage 2 only. The token is read from DATABRICKS_TOKEN, never from this file.
+# Used when kind = "databricks". host / warehouse_id fall back to DATABRICKS_HOST /
+# DATABRICKS_SQL_WAREHOUSE_ID; the token is read only from DATABRICKS_TOKEN, never from this file.
 # host = "https://<workspace>.cloud.databricks.com"
 # warehouse_id = "97c455ee6fb1fcb9"
 schema = "workspace.map_qa"

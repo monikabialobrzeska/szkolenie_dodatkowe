@@ -27,9 +27,20 @@ uv run mapqa view               # otwiera viewer.html w przeglądarce
 | `mapqa check-source [--config] [--source] [--data-dir]` | Sprawdza źródło i wymagane kolumny bez uruchamiania sprawdzeń. |
 | `mapqa view [--output-dir] [--no-open]` | Odtwarza `viewer.html` z ostatniego przebiegu i otwiera go. |
 
-Źródła danych: `files` (zaimplementowane), `databricks` i `public_api` (rozpoznawane, kończą się kodem 4 „not available yet”). Kolejność ustawień: opcja CLI → zmienna `MAPQA_DATA_SOURCE` / `MAPQA_CONFIG` → plik TOML → domyślne. Przykład konfiguracji: [`mapqa.example.toml`](mapqa.example.toml) (skopiuj do `app/mapqa.toml`, plik jest ignorowany przez git). Sekrety tylko w zmiennych środowiskowych — klucz wyglądający na sekret w TOML kończy się kodem 2.
+Źródła danych: `files` i `databricks` (zaimplementowane), `public_api` (rozpoznawane, kończy się kodem 4 „not available yet”). Kolejność ustawień: opcja CLI → zmienna `MAPQA_DATA_SOURCE` / `MAPQA_CONFIG` → plik TOML → domyślne. Przykład konfiguracji: [`mapqa.example.toml`](mapqa.example.toml) (skopiuj do `app/mapqa.toml`, plik jest ignorowany przez git). Sekrety tylko w zmiennych środowiskowych — klucz wyglądający na sekret w TOML kończy się kodem 2.
 
 **Kody wyjścia:** 0 sukces · 1 błąd wewnętrzny · 2 konfiguracja/opcje · 3 brak lub nieczytelne wejście (albo brak wyników dla `view`) · 4 źródło niedostępne.
+
+## Źródło Databricks (Stage 2)
+
+Te same pięć tabel `workspace.map_qa`, tylko do odczytu. Zmienne `DATABRICKS_HOST`, `DATABRICKS_TOKEN` i `DATABRICKS_SQL_WAREHOUSE_ID` ustaw w PowerShell (token przez `Read-Host -MaskInput`, wklejany prawym przyciskiem) i z tego samego okna uruchom narzędzie albo Claude Code:
+
+```powershell
+uv run mapqa check-source --source databricks   # 6× ok
+uv run mapqa run --source databricks            # ok. 1,5 min (warehouse może się wybudzać)
+```
+
+Kolejka z Databricks jest bajt w bajt identyczna z kolejką z plików (test `tests/integration/test_databricks.py`). Brak zmiennych, odrzucony token albo błąd zapytania kończą się kodem 4 — bez przełączenia na pliki. W przeglądarce wyników z Databricks miniatury zdjęć nie są pokazywane (należą do lokalnego snapshotu), linki do źródeł działają.
 
 ## Wyniki (`reports/map-qa/stage1/`)
 
@@ -39,7 +50,8 @@ uv run mapqa view               # otwiera viewer.html w przeglądarce
 | `review_queue.geojson` | QGIS | to samo z geometrią (punkt znaku lub linia drogi), EPSG:4326 |
 | `viewer.html` | analityk | mapa + filtrowana tabela + szczegóły kandydata (droga OSM porównana ze znakiem, zdjęcia, linki) |
 | `summary.md` | lider zespołu | liczności wg typu × stanu, powodu, klasy drogi, pominięte rekordy, ustawienia, atrybucja |
-| `run_summary.json` | agent / automatyzacja | źródło, konfiguracja, liczności wejść, SHA-256 przed/po, liczności wyników |
+| `run_summary.json` | agent / automatyzacja | źródło, konfiguracja, liczności wejść, odciski przed/po (SHA-256 plików lub wersja tabel Delta), liczności wyników |
+| `viewer_context.json` | `mapqa view` | geometrie dróg i metadane zdjęć z bieżącego źródła |
 
 Kolejka i GeoJSON są deterministyczne: dwa przebiegi na tych samych danych dają identyczne bajty.
 
@@ -58,7 +70,8 @@ Wynik na przypiętym snapshocie (2026-11-12): 1896 kandydatów — 290 `missing_
 
 ```powershell
 uv run pytest -m "not integration"   # testy jednostkowe (~1 s)
-uv run pytest                        # wszystko, w tym prawdziwe CLI na pełnym snapshocie (~2,5 min)
+uv run pytest                        # wszystko, w tym prawdziwe CLI i test zgodności z Databricks (~4,5 min)
+uv run pytest -m "not databricks"     # bez Databricks
 uv run python tests/fixtures/build_fixtures.py   # odtworzenie fixtures z prawdziwych danych
 ```
 

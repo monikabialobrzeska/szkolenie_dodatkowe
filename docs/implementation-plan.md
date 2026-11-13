@@ -27,13 +27,13 @@ Definition of done for Stage 1 = ADR-000 §10 and ADR-003 §8 technical acceptan
 | # | Phase | Delivers | Exit criterion | Status |
 |---|---|---|---|---|
 | S2-0 | Access check | variables present, token shape ok, one `SELECT count(*)` | 5/5 counts equal files | ✅ 2026-11-13 |
-| S2-1 | Discovery + real captures | `DESCRIBE` of the 5 tables; verbatim captures (per `AGENTS.md` mock rule) of a small `SELECT`, a multi-chunk result, a `FAILED` statement and a poll sequence in `app/tests/fixtures/databricks/`; measured size of the projected `osm_roads` result | captures contain no secret (token-sentinel grep); transport limits measured | |
-| S2-2 | ADR-004 Databricks adapter | decisions listed below, based on S2-1 | ADR accepted; open trade-offs confirmed with the user | |
-| S2-3 | TDD: REST client | client per ADR-004, unit tests driven by the S2-1 captures | red → green, no network in unit tests | |
-| S2-4 | TDD: `DatabricksSource` | same `InputBundle` contract as files (ADR-001 §4.2), `check-source --source databricks` | unit tests green; existing suite green | |
-| S2-5 | Parity + integration | tests marked `databricks` (register the marker in `app/pyproject.toml`; skip with an explicit reason when variables are missing): counts = files, `review_queue.*` byte-identical, wrong token → exit 4 without leaking it, no fallback | parity green against the real warehouse | |
-| S2-6 | Manual QA | real runs on both sources, `diff`, timing incl. warehouse wake-up, viewer from the Databricks run, screenshots in `reports/map-qa/qa/stage2/` | evidence recorded | |
-| S2-7 | Docs | `app/README.md`, `mapqa.example.toml`, `app/AGENTS.md` (or `app/src/mapqa/sources/AGENTS.md`), skill notes | docs match `--help` | |
+| S2-1 ✅ `9e67673` | Discovery + real captures | `DESCRIBE` of the 5 tables; verbatim captures (per `AGENTS.md` mock rule) of a small `SELECT`, a multi-chunk result, a `FAILED` statement and a poll sequence in `app/tests/fixtures/databricks/`; measured size of the projected `osm_roads` result | captures contain no secret (token-sentinel grep); transport limits measured | |
+| S2-2 ✅ `94e4eba` | ADR-004 Databricks adapter | decisions listed below, based on S2-1 | ADR accepted; open trade-offs confirmed with the user | |
+| S2-3 ✅ `a8f500d` | TDD: REST client | client per ADR-004, unit tests driven by the S2-1 captures | red → green, no network in unit tests | |
+| S2-4 ✅ `a8f500d` | TDD: `DatabricksSource` | same `InputBundle` contract as files (ADR-001 §4.2), `check-source --source databricks` | unit tests green; existing suite green | |
+| S2-5 ✅ `a8f500d` | Parity + integration | tests marked `databricks` (register the marker in `app/pyproject.toml`; skip with an explicit reason when variables are missing): counts = files, `review_queue.*` byte-identical, wrong token → exit 4 without leaking it, no fallback | parity green against the real warehouse | |
+| S2-6 ✅ | Manual QA | real runs on both sources, `diff`, timing incl. warehouse wake-up, viewer from the Databricks run, screenshots in `reports/map-qa/qa/stage2/` | evidence recorded | |
+| S2-7 ✅ | Docs | `app/README.md`, `mapqa.example.toml`, `app/AGENTS.md` (or `app/src/mapqa/sources/AGENTS.md`), skill notes | docs match `--help` | |
 
 **ADR-004 must decide** (inputs: ADR-001 §4.5, S2-1 measurements, consistency review 2026-11-13):
 1. Transport for ~100k rows with geometry (INLINE + chunks, `osm_id` range paging, or `EXTERNAL_LINKS`/Arrow), server-side projection of `maxspeed*` tags, geometry encoding.

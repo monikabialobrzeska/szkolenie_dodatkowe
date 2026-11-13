@@ -48,9 +48,9 @@ One JSON object inside `<script type="application/json" id="mapqa-data">`, with 
 - `candidates`: the review-queue rows (all CSV columns) plus `geometry` (GeoJSON, EPSG:4326).
 - `photos`: for every `photo_id` referenced by a candidate — `captured_at`, `author`, `license`, `source_url`, and `thumb` = relative path to `<data_dir>/offline/<filename>` when that file exists, otherwise null.
 
-- `roads` (added during manual QA, 2026-11-12): GeoJSON of every OSM way referenced by a `sign_road` candidate, read from `osm_roads.parquet`, so the detail map shows the way the sign was compared with (dashed blue) — the queue itself stores only the sign point.
+- `roads` (added during manual QA, 2026-11-12): GeoJSON of every OSM way referenced by a `sign_road` candidate, taken from the run's roads, so the detail map shows the way the sign was compared with (dashed blue) — the queue itself stores only the sign point.
 
-`mapqa view` rebuilds `photos` and `roads` from the read-only data folder recorded in `run_summary.json` (`config.data_dir`); if that folder is gone, the page still renders without photo metadata and road context.
+*(Amended 2026-11-13 by ADR-004 §6.)* `mapqa run` writes `photos` and `roads` to `viewer_context.json`, built from the active source's `InputBundle`; `mapqa view` reads only the output folder. Offline thumbnails are used only for the `files` source.
 
 The page works from `file://` with no fetch calls. Only Leaflet and tiles need the network; without network the table, detail and summary still work and the map area states "Map tiles unavailable".
 

@@ -5,13 +5,13 @@ Applies to work inside `app/`. Root `AGENTS.md` still applies; this file adds st
 ## Stack and commands (run from `app/`)
 
 - Python 3.12 via uv only: `uv sync`, `uv run mapqa …`, `uv run pytest`. Never use the system Python (3.14, no deps).
-- Unit tests: `uv run pytest -m "not integration"` (~1 s). Full suite incl. real CLI on the snapshot: `uv run pytest` (~2.5 min).
+- Unit tests: `uv run pytest -m "not integration"` (~5 s). Full suite incl. real CLI: `uv run pytest` (~4.5 min with Databricks; the `databricks` tests skip with a reason when its variables are missing). Without the warehouse: `uv run pytest -m "not databricks"`.
 - Manual QA: `uv run mapqa run` then `uv run mapqa view`; for screenshots drive system Edge with Playwright for Python (`channel="msedge"`, no browser download): `uv run --with playwright==1.55.0 python <qa-script>`; save to `reports/map-qa/qa/`.
 
 ## Where things live
 
 - Rules and reason codes: `src/mapqa/interpret.py`, `src/mapqa/checks/*` — the spec is `docs/ADR/002-detection-rules.md`; change the ADR and tests first.
-- Source reading: `src/mapqa/sources/files.py` (DuckDB + `ST_AsWKB`, EPSG:2180). Spec: ADR-001.
+- Source reading: `src/mapqa/sources/` — `files.py`, `databricks.py` (+ `databricks_client.py`), shared `normalise.py`. Spec: ADR-001, ADR-004; scoped rules in `src/mapqa/sources/AGENTS.md`.
 - Outputs and viewer: `src/mapqa/outputs/` (viewer template is plain HTML/JS + Leaflet 1.9.4). Spec: ADR-000 §6.2, ADR-003.
 
 ## Rules

@@ -1,7 +1,7 @@
 # ADR-004: Databricks Source (Stage 2)
 
 **Date:** 2026-11-13
-**Status:** Accepted
+**Status:** Accepted · implemented 2026-11-13 (commit `a8f500d`); parity test green
 **Relates to:** [`000-main-architecture.md`](000-main-architecture.md), [`001-data-sources-and-config.md`](001-data-sources-and-config.md) §3.3, §4, §4.5, [`003-viewer.md`](003-viewer.md), PRD AC-05a–AC-05f, `mvp-scope.md` §2 items 9–10
 
 ---
@@ -140,6 +140,8 @@ sequenceDiagram
 | Read-only guard | Unit | `DROP TABLE …` | rejected before any request |
 | Normalisers | Unit | sample rows from both sources | identical dtypes and values |
 | Parity | Integration, marker `databricks` (skipped with reason when variables are missing) | real warehouse | row counts = files; `review_queue.csv`/`.geojson` byte-identical; wrong token → exit 4, no leak |
+
+**Results 2026-11-13:** 74 tests green (5 against the real warehouse); `check-source --source databricks` 6× ok; full Databricks run 95 s (files 43 s); `review_queue.csv` / `.geojson` byte-identical; token absent from all outputs. Known, accepted difference outside the queue: `photos.captured_at` arrives from Databricks with millisecond precision (files: microseconds) — visible only in `viewer_context.json`, the viewer shows the date.
 
 ### Technical acceptance criteria
 - **TAC-004-01** `mapqa run --source databricks` exits 0 and its `review_queue.csv` and `review_queue.geojson` are byte-identical to the files run on the pinned snapshot.

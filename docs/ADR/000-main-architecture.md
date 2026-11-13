@@ -196,6 +196,7 @@ Written to the output folder (default `reports/map-qa/stage1/`). All text files 
 | `review_queue.csv` | One row per candidate in rank order | Columns, in order: `rank, candidate_id, type, state, reason_code, explanation, road_class, osm_ids, sign_id, osm_value_raw, osm_value_kmh, osm_forward_kmh, osm_backward_kmh, sign_value_kmh, diff_kmh, distance_m, sign_first_seen_at, sign_last_seen_at, photo_count, photo_ids, osm_version, osm_timestamp, lon, lat`. List fields joined with `;`. Empty string for null. `lon`/`lat` = representative point (sign position, or the road's midpoint on the line) in EPSG:4326, 6 decimals. |
 | `review_queue.geojson` | Same rows as features | EPSG:4326 (RFC 7946). Geometry: sign `Point` for `sign_road`, road `LineString` for `missing_limit`, `unparseable_value` and `tag_inconsistency`. Properties = CSV columns except `lon`/`lat`. Coordinates rounded to 7 decimals. QGIS loads it as two sub-layers by geometry type. |
 | `viewer.html` | Analyst | Read-only map + table + candidate detail with embedded data (ADR-003). |
+| `viewer_context.json` | `mapqa view` | Road geometries for sign candidates and photo metadata from the run's own source, so `view` reads only the output folder (ADR-004 §6). |
 | `summary.md` | Team-lead report | Sections: snapshot identification (OSM extract date, Overture release, from `sources.json`), source and read time, rows read, table type × state, table by road class, skipped and unmatched with reasons, distance limit used, the implicit-value mapping table, attribution and licences (AC-27) copied from `ATTRIBUTION.md` headings. Every count equals the matching rows in `review_queue.csv` (AC-26). Wording uses "candidate", never "error". |
 | `run_summary.json` | Agent-readable summary | Keys: `tool_version`, `command`, `exit_code`, `source` {`kind`, `location`, `read_at`}, `config` {resolved values, no secrets}, `inputs` {name → {`path`, `rows`, `sha256_before`, `sha256_after`}}, `counts` {`by_type_state`, `by_road_class`, `skipped`, `unmatched`}, `outputs` {name → relative path}. Written also on exit codes 3 and 4 into the output folder's `last_failed_run.json` (the queue is not written in that case). |
 
@@ -502,7 +503,7 @@ Integration:
 
 | Scenario | Input | Expected |
 |---|---|---|
-| Full run | real snapshot, default config | exit 0; five output files (incl. `viewer.html`); counts in `run_summary.json` equal row counts in `review_queue.csv` per type × state |
+| Full run | real snapshot, default config | exit 0; six output files (incl. `viewer.html`, `viewer_context.json`); counts in `run_summary.json` equal row counts in `review_queue.csv` per type × state |
 | Inputs unchanged | same | SHA-256 of all five inputs identical before and after (AC-01) |
 | Determinism | two runs into two `tmp_path` folders | `review_queue.csv` and `.geojson` byte-identical (AC-03) |
 | Missing input | data dir copy in `tmp_path` without `photos.csv` | exit 3; stderr names `photos.csv`; no `review_queue.csv` written (AC-02) |

@@ -121,7 +121,7 @@ All six are required. Any missing file, unreadable file or missing column → `I
 - **Area filter:** signs whose point lies outside `area.bbox` (inclusive edges) are dropped and counted as skipped `outside_area`. No other dataset is filtered by area.
 - **Read-only:** files are opened read-only; DuckDB uses an in-memory database (no file created next to inputs); the adapter never writes inside `data_dir`.
 
-### 4.5 Verified Databricks facts (for Stage 2, not implemented in Stage 1)
+### 4.5 Verified Databricks facts (implemented in Stage 2 — see ADR-004)
 
 Verified on 2026-11-12 with one read-only `SELECT count(*)` per table through the SQL Statement Execution API (`query_databricks.py`):
 

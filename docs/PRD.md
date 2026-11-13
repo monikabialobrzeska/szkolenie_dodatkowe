@@ -89,7 +89,7 @@ Today an analyst has to open several sources by hand, find the matching road in 
 |---|---|
 | AC-01–AC-09, AC-12–AC-17b, AC-19–AC-21, AC-26, AC-27 | Stage 1 (built) |
 | AC-22, AC-25 (type/state/class filters), AC-28 | Stage 1 via the read-only viewer (ADR-003); photo metadata partly |
-| AC-05a–AC-05f (Databricks part) | Stage 2 |
+| AC-05a–AC-05f (Databricks part) | Stage 2 (built 2026-11-13, ADR-004) |
 | AC-10, AC-11 (OSM vs Overture) | Deferred |
 | AC-05g, AC-05h (public API), AC-05i, AC-23, AC-24, AC-25 review status, AC-25a–AC-25c | Deferred |
 | AC-29–AC-40 | Phase 2 / Stage 3 |
