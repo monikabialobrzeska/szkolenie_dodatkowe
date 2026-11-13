@@ -1,0 +1,131 @@
+{
+  "case": "luna_chat",
+  "model": "openai/gpt-6-luna",
+  "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+  "captured_at": "2026-11-13T10:31:04Z",
+  "sent": "crop bytes + neutral question only (no file name, id, label, Mapillary value)",
+  "attempts": [
+    {
+      "http_status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "x-generation-id": "gen-1794565863-xdGUcEwXn8ZlvJXdDab4"
+      },
+      "elapsed_s": 3.16,
+      "body": {
+        "id": "gen-1794565863-xdGUcEwXn8ZlvJXdDab4",
+        "object": "chat.completion",
+        "created": 1794565863,
+        "model": "openai/gpt-6-luna",
+        "provider": "OpenAI",
+        "system_fingerprint": null,
+        "service_tier": "default",
+        "choices": [
+          {
+            "index": 0,
+            "logprobs": null,
+            "finish_reason": "stop",
+            "native_finish_reason": "completed",
+            "message": {
+              "role": "assistant",
+              "content": "{\"answer\":\"20\",\"uncertain\":false}",
+              "refusal": null,
+              "reasoning": null
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 334,
+          "completion_tokens": 19,
+          "total_tokens": 353,
+          "cost": 0,
+          "is_byok": true,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "audio_tokens": 0,
+            "video_tokens": 0
+          },
+          "cost_details": {
+            "upstream_inference_cost": 4.29e-05,
+            "upstream_inference_prompt_cost": 3.34e-05,
+            "upstream_inference_completions_cost": 9.5e-06
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 0,
+            "image_tokens": 0,
+            "audio_tokens": 0
+          }
+        }
+      },
+      "request": {
+        "model": "openai/gpt-6-luna",
+        "reasoning": {
+          "effort": "medium"
+        },
+        "response_format": {
+          "type": "json_schema",
+          "json_schema": {
+            "name": "sign_reading",
+            "strict": true,
+            "schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "answer",
+                "uncertain"
+              ],
+              "properties": {
+                "answer": {
+                  "type": "string",
+                  "enum": [
+                    "5",
+                    "10",
+                    "15",
+                    "20",
+                    "25",
+                    "30",
+                    "40",
+                    "50",
+                    "60",
+                    "70",
+                    "80",
+                    "90",
+                    "100",
+                    "110",
+                    "120",
+                    "130",
+                    "140",
+                    "none",
+                    "unreadable"
+                  ]
+                },
+                "uncertain": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        },
+        "messages": [
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "What speed limit is shown on a round speed-limit sign (white disc with a red border) in this image?\nAnswer with exactly one of: \"5\", \"10\", \"15\", \"20\", \"25\", \"30\", \"40\", \"50\", \"60\", \"70\", \"80\", \"90\", \"100\", \"110\", \"120\", \"130\", \"140\", \"none\", \"unreadable\". Use \"none\" if there is no such sign (also for zone, zone-end and end-of-limit signs) and \"unreadable\" if the number cannot be read. Set uncertain to true if you are not sure."
+              },
+              {
+                "type": "image_url",
+                "image_url": {
+                  "url": "<image/jpeg sha256=7d29ba32bbb103f59dcc8304f36f1b497bfaeb5cda4f1ab38deeadd15dd6e2a3 bytes=44022>"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "state_shape": null
+    }
+  ]
+}

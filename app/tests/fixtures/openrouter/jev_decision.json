@@ -1,0 +1,100 @@
+{
+  "case": "jev_decision",
+  "model": "typesafe/jev-1.14",
+  "endpoint": "https://openrouter.ai/api/alpha/decisions",
+  "captured_at": "2026-11-13T10:30:41Z",
+  "sent": "crop bytes + neutral question only (no file name, id, label, Mapillary value)",
+  "attempts": [
+    {
+      "http_status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "x-generation-id": "gen-dec-1794565843-X7HAlaCS3XfcKZvoNqKU"
+      },
+      "elapsed_s": 0.62,
+      "body": {
+        "model": "typesafe/jev-1.14-20261014",
+        "answers": {
+          "speed_limit": {
+            "type": "choice",
+            "choice": "20",
+            "probabilities": {
+              "5": 0,
+              "10": 0,
+              "15": 0,
+              "20": 1,
+              "25": 0,
+              "30": 0,
+              "40": 0,
+              "50": 0,
+              "60": 0,
+              "70": 0,
+              "80": 0,
+              "90": 0,
+              "100": 0,
+              "110": 0,
+              "120": 0,
+              "130": 0,
+              "140": 0,
+              "none": 0,
+              "unreadable": 0
+            },
+            "confidence": 1
+          }
+        },
+        "usage": {
+          "input_tokens": 1030,
+          "output_tokens": 175,
+          "cost": 0,
+          "is_byok": true,
+          "cost_details": {
+            "upstream_inference_cost": 4.326e-05,
+            "upstream_inference_prompt_cost": 4.326e-05,
+            "upstream_inference_completions_cost": 0
+          }
+        },
+        "id": "gen-dec-1794565843-X7HAlaCS3XfcKZvoNqKU",
+        "provider": "TypeSafe"
+      },
+      "request": {
+        "model": "typesafe/jev-1.14",
+        "state": [
+          {
+            "type": "image_url",
+            "image_url": {
+              "url": "<image/jpeg sha256=7d29ba32bbb103f59dcc8304f36f1b497bfaeb5cda4f1ab38deeadd15dd6e2a3 bytes=44022>"
+            }
+          }
+        ],
+        "questions": {
+          "speed_limit": {
+            "type": "choice",
+            "instructions": "What speed limit is shown on a round speed-limit sign (white disc with a red border) in this image?",
+            "criteria": {
+              "5": "The sign shows 5 km/h.",
+              "10": "The sign shows 10 km/h.",
+              "15": "The sign shows 15 km/h.",
+              "20": "The sign shows 20 km/h.",
+              "25": "The sign shows 25 km/h.",
+              "30": "The sign shows 30 km/h.",
+              "40": "The sign shows 40 km/h.",
+              "50": "The sign shows 50 km/h.",
+              "60": "The sign shows 60 km/h.",
+              "70": "The sign shows 70 km/h.",
+              "80": "The sign shows 80 km/h.",
+              "90": "The sign shows 90 km/h.",
+              "100": "The sign shows 100 km/h.",
+              "110": "The sign shows 110 km/h.",
+              "120": "The sign shows 120 km/h.",
+              "130": "The sign shows 130 km/h.",
+              "140": "The sign shows 140 km/h.",
+              "none": "There is no round speed-limit sign with a number in the image, including zone signs, zone-end and end-of-limit signs.",
+              "unreadable": "A round speed-limit sign is present but its number cannot be read reliably."
+            }
+          }
+        }
+      },
+      "state_shape": "parts"
+    }
+  ]
+}
