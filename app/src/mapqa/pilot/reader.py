@@ -56,6 +56,7 @@ class Reading:
     cost_usd: float | None = None
     cached: bool = False
     cache_key: str | None = None
+    error: str | None = None
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -95,9 +96,20 @@ def _meta(ex: Exchange) -> dict:
             "cost_usd": cost if isinstance(cost, (int, float)) and not isinstance(cost, bool) else None}
 
 
-def _result(meta: dict, status: str, answer=None, probability=None, uncertain=None, raw_choice=None) -> dict:
+def _result(meta: dict, status: str, answer=None, probability=None, uncertain=None, raw_choice=None,
+            error=None) -> dict:
     return {"status": status, "answer": answer, "probability": probability, "uncertain": uncertain,
-            "raw_choice": raw_choice, **meta}
+            "raw_choice": raw_choice, "error": error, **meta}
+
+
+def _error_message(ex: Exchange) -> str:
+    """API error text for the call log (AC-36); never the request, so never the key or the image."""
+    if ex.error:
+        return ex.error
+    body = ex.body
+    if isinstance(body, dict) and isinstance(body.get("error"), dict):
+        return str(body["error"].get("message", body["error"]))[:500]
+    return (body if isinstance(body, str) else json.dumps(body))[:500]
 
 
 def _parse_decision(ex: Exchange, meta: dict) -> dict:
@@ -142,7 +154,7 @@ def parse(model: str, ex: Exchange) -> dict:
     """Exchange -> reading fields. Anything but a valid HTTP 200 answer is never an answer (AC-32)."""
     meta = _meta(ex)
     if ex.http_status != 200 or ex.error:
-        return _result(meta, "model_unavailable")
+        return _result(meta, "model_unavailable", error=_error_message(ex))
     return _parse_decision(ex, meta) if model in DECISION_MODELS else _parse_chat(ex, meta)
 
 
@@ -210,7 +222,7 @@ class Reader:
                 log = {"run_id": self.run_id, "model": model, "item_id": item.item_id,
                        "cache_key": reading.cache_key, "cached": reading.cached, "status": reading.status,
                        "http_status": reading.http_status, "elapsed_s": reading.elapsed_s,
-                       "generation_id": reading.generation_id, "cost_usd": reading.cost_usd}
+                       "generation_id": reading.generation_id, "cost_usd": reading.cost_usd, "error": reading.error}
                 self._write(self.log_path, json.dumps(log, ensure_ascii=False) + "\n", append=True)
                 readings.append(reading)
         return readings

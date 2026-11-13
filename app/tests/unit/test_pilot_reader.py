@@ -279,3 +279,17 @@ def test_chain(t1, t2, expected):
     out = chain.resolve(t1, t2)
     assert (out.answer, out.tier, out.reason) == expected
     assert out.used_tier2 == (t1.status == "abstained")
+
+
+def test_error_message_is_recorded_in_the_call_log(tmp_path, crops):
+    """AC-36: each call is recorded with its response; for an error that is the API's message."""
+    root, items = crops
+    make_reader(tmp_path, FakeTransport(override={"typesafe/jev-1.14": exchange_of("error_unknown_model.json")})
+                ).read_all(items[:1], root, ["typesafe/jev-1.14"])
+    rec = json.loads((tmp_path / "calls.jsonl").read_text(encoding="utf-8").splitlines()[0])
+    assert rec["error"] == "Model mapqa-invalid/does-not-exist does not exist"
+
+
+def test_timeout_error_is_recorded():
+    r = parse("typesafe/jev-1.14", Exchange(http_status=None, headers={}, body=None, elapsed_s=40.0, error="TimeoutError"))
+    assert r["error"] == "TimeoutError"
