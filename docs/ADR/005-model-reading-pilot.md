@@ -1,7 +1,7 @@
 # ADR-005: Model Reading Pilot (Stage 3)
 
 **Date:** 2026-11-13
-**Status:** Accepted 2026-11-13 (trade-offs in §6 confirmed with the user); not yet implemented
+**Status:** Accepted 2026-11-13 (trade-offs in §6 confirmed with the user); implemented `b3574c3`, `048baae`
 **Relates to:** PRD AC-29–AC-40, §11, §12 "Models" / "Pilot design", open questions 6 and 9; `mvp-scope.md` §2 items 11–13; [`000-main-architecture.md`](000-main-architecture.md) (CLI, exit codes)
 
 ---
@@ -57,7 +57,7 @@ New package `src/mapqa/pilot/`, no new dependency (`urllib`, like `databricks_cl
 
 Two negatives (cancelled sign, logo) are cases where the detector is wrong, so the "better than the detector on negatives" comparison is not vacuous. If a stratum cannot be filled, `pilot plan` fails with exit 3 and names the stratum; it never substitutes silently.
 
-`manifest.json`: `{version, created_at, data_dir, items: [{item_id, crop, crop_sha256, sequence}], models, calls_planned, budget_per_model}`. `item_id` is the photo id; it is used for joining and file lookup only and is never sent to a model (AC-29). The **confirmation code** is the first 12 hex digits of the SHA-256 of `manifest.json`; `pilot run` refuses to start unless `--confirm` matches it (AC-33).
+`manifest.json`: `{version, models, budget_per_model, calls_planned, threshold, items: [{item_id, crop, crop_sha256, sequence}]}` — deterministic (no timestamp, crop paths relative to the data dir), so re-running `pilot plan` yields the same confirmation code. `item_id` is the photo id; it is used for joining and file lookup only and is never sent to a model (AC-29). The **confirmation code** is the first 12 hex digits of the SHA-256 of `manifest.json`; `pilot run` refuses to start unless `--confirm` matches it (AC-33).
 
 ### 4.2 Requests (AC-29, AC-30)
 
