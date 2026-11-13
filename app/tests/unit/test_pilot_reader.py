@@ -18,19 +18,7 @@ from mapqa.pilot.openrouter import Exchange
 from mapqa.pilot.reader import (CHAT_MODEL, DECISION_MODELS, MODELS, Item, Reader, build_request, cache_key,
                                 parse)
 
-CAPTURES = Path(__file__).resolve().parents[1] / "fixtures" / "openrouter"
-CAPTURE_FILE = {"typesafe/jev-1.14": "jev_decision.json", "openai/gpt-6-luna-decisions": "luna_decisions_decision.json",
-                "openai/gpt-6-luna": "luna_chat.json"}
-KEY = "sk-or-v1-" + "0" * 64  # synthetic sentinel, never a real key
-
-
-def capture(name: str) -> dict:
-    return json.loads((CAPTURES / name).read_text(encoding="utf-8"))
-
-
-def exchange_of(name: str) -> Exchange:
-    a = capture(name)["attempts"][0]
-    return Exchange(http_status=a["http_status"], headers=a["headers"], body=a["body"], elapsed_s=a["elapsed_s"])
+from pilot_captures import CAPTURE_FILE, KEY, capture, exchange_of
 
 
 class FakeTransport:

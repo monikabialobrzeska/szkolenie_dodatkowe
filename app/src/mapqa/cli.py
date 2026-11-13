@@ -16,7 +16,8 @@ EXIT_CODES = """exit codes:
   1  unexpected internal problem (bug); traceback on stderr
   2  usage or configuration problem (bad option, invalid TOML, unknown or secret key)
   3  input problem: a required input is missing, unreadable or lacks columns; or no run results for `view`
-  4  source problem: source not available yet (public_api), unreachable, credentials missing or rejected"""
+  4  source problem: source not available yet (public_api), unreachable, credentials missing or rejected;
+     pilot: OPENROUTER_API_KEY missing/malformed or an API error stopped the paid loop"""
 
 DESCRIPTION = """Speed-limit conflict finder for Krakow map QA (Stages 1-2).
 
@@ -30,6 +31,16 @@ data sources (--source, env MAPQA_DATA_SOURCE, config [source] kind; default fil
   public_api  Overture bucket, OSM extract, Mapillary/Panoramax APIs (not available yet)"""
 
 
+PILOT_DESCRIPTION = """Stage 3 model reading pilot (ADR-005). Not wired into the review queue.
+
+  plan      free; writes manifest.json (no labels) + strata.json and prints the confirm code
+  run       PAID; needs OPENROUTER_API_KEY and --confirm CODE; <= 25 calls per model, 40 s timeout,
+            no retries, stops all paid calls after the first API error; results are cached
+  evaluate  free; the only step that reads signs/labels.csv; writes report.md and report.json
+
+models: typesafe/jev-1.14, openai/gpt-6-luna-decisions (decision models), openai/gpt-6-luna (general LLM)"""
+
+
 def _add_source_options(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--config", help="TOML configuration file (default: env MAPQA_CONFIG, else built-in defaults)")
     parser.add_argument("--source", choices=["files", "databricks", "public_api"],
@@ -41,7 +52,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="mapqa", description=DESCRIPTION, epilog=EXIT_CODES,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--version", action="version", version=f"mapqa {__version__}")
-    sub = parser.add_subparsers(dest="command", required=True, metavar="{run,check-source,view}")
+    sub = parser.add_subparsers(dest="command", required=True, metavar="{run,check-source,view,pilot}")
 
     run = sub.add_parser("run", help="run all checks and write the review queue, reports and viewer",
                          description="Run all Stage 1 checks and write review_queue.csv/.geojson, summary.md, "
@@ -59,6 +70,22 @@ def build_parser() -> argparse.ArgumentParser:
                           epilog=EXIT_CODES, formatter_class=argparse.RawDescriptionHelpFormatter)
     view.add_argument("--output-dir", help="folder with the run results (default: reports/map-qa/stage1)")
     view.add_argument("--no-open", action="store_true", help="only write viewer.html, do not open a browser")
+
+    pilot = sub.add_parser("pilot", help="Stage 3: offline model reading pilot on sign crops (OpenRouter)",
+                           description=PILOT_DESCRIPTION, epilog=EXIT_CODES,
+                           formatter_class=argparse.RawDescriptionHelpFormatter)
+    psub = pilot.add_subparsers(dest="pilot_command", required=True, metavar="{plan,run,evaluate}")
+    plan = psub.add_parser("plan", help="free: build the stratified sample, write and print the manifest and confirm code",
+                           epilog=EXIT_CODES, formatter_class=argparse.RawDescriptionHelpFormatter)
+    prun = psub.add_parser("run", help="PAID: read the manifest crops with the three models (needs --confirm)",
+                           epilog=EXIT_CODES, formatter_class=argparse.RawDescriptionHelpFormatter)
+    prun.add_argument("--confirm", metavar="CODE",
+                      help="confirm code printed by `pilot plan`; binds consent to exactly that manifest (AC-33)")
+    peval = psub.add_parser("evaluate", help="free: compare readings with reference labels and write report.md/.json",
+                            epilog=EXIT_CODES, formatter_class=argparse.RawDescriptionHelpFormatter)
+    for p in (plan, prun, peval):
+        p.add_argument("--data-dir", help="map-qa data folder containing signs/ (default: course exercise data)")
+        p.add_argument("--output-dir", help="pilot folder (default: reports/map-qa/pilot)")
     return parser
 
 
@@ -149,10 +176,16 @@ def cmd_view(args) -> int:
     return 0
 
 
+def cmd_pilot(args) -> int:
+    from mapqa.pilot import commands
+
+    return {"plan": commands.cmd_plan, "run": commands.cmd_run, "evaluate": commands.cmd_evaluate}[args.pilot_command](args)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
-    handlers = {"run": cmd_run, "check-source": cmd_check_source, "view": cmd_view}
+    handlers = {"run": cmd_run, "check-source": cmd_check_source, "view": cmd_view, "pilot": cmd_pilot}
     try:
         return handlers[args.command](args)
     except Exception:  # unexpected: report as a bug, exit 1
