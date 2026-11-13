@@ -38,6 +38,27 @@ P3 → P4 → P5 → P6 are the product; P7 can be reduced to `app/README.md` + 
 - All PRD Stage 1 ACs in scope and TACs of ADR-000…003 pass or are explicitly reported as not met.
 - Tests green, two runs byte-identical, inputs unchanged.
 
+---
+
+# Stage 2 — Databricks source (planned 2026-11-13)
+
+**Goal (`mvp-scope.md` §2 items 9–10, PRD AC-05a–AC-05f):** `mapqa run --source databricks` reads the five `workspace.map_qa` tables read-only and produces a review queue **byte-identical** to `--source files` on the same pinned snapshot.
+
+**Hard prerequisite:** the Claude Code session must be started from a PowerShell window where `DATABRICKS_HOST`, `DATABRICKS_TOKEN`, `DATABRICKS_SQL_WAREHOUSE_ID` are set (see `.agents/skills/check-databricks`). Without them S2-1, S2-5 and S2-6 cannot run; the agent stops and asks instead of mocking from documentation.
+
+| # | Phase | Priority | Depends on | Delivers | Exit criteria | Status |
+|---|---|---|---|---|---|---|
+| S2-0 | Access check | must | — | `/check-databricks`: variables present, one `SELECT count(*)`, counts equal files | 5/5 counts match | |
+| S2-1 | Discovery + real captures | must | S2-0 | `DESCRIBE` of the 5 tables (types vs local files); verbatim captures (status, headers without secrets, body, date, statement, warehouse id) of: a small `SELECT`, a multi-chunk result, a `FAILED` statement, a `PENDING` → poll sequence → `app/tests/fixtures/databricks/`; measured size of the projected `osm_roads` result | captures saved with no secrets (grep for the token sentinel); transport limits measured | |
+| S2-2 | ADR-004 Databricks adapter | must | S2-1 | decisions: transport (INLINE + chunks vs `osm_id` range paging vs `EXTERNAL_LINKS`/Arrow, from the measurement), server-side projection (`get_json_object` for `maxspeed*` tags, `hex(geometry)` or base64), type mapping from `manifest.schema`, polling/timeouts, error → exit 4 mapping, read-only guard (fixed `SELECT` templates only), config/env precedence for host/warehouse/schema | ADR reviewed with the user if a transport trade-off remains | |
+| S2-3 | TDD: REST client + type casting | must | S2-2 | `sources/databricks_client.py` (urllib, no new dependency): submit, poll same `statement_id`, follow chunks, `FAILED`/`CANCELED`/HTTP 401/403 → `SourceUnavailable`, never prints the token; unit tests driven by the S2-1 captures | red → green; no test needs network | |
+| S2-4 | TDD: `DatabricksSource` + shared normalisation | must | S2-3 | adapter returning the same `InputBundle` (columns, dtypes, sort order, EPSG:2180) as `FilesSource`; refactor a shared `normalise_*` step so parity is structural, not coincidental; `check-source --source databricks` (reachability + credentials present) | unit tests green; existing 55 tests still green | |
+| S2-5 | Parity + integration | must | S2-4 | integration tests marked `databricks` (skipped with an explicit reason when variables are missing): `check-source` exit 0, row counts = files, **`review_queue.csv`/`.geojson` byte-identical to files**, wrong token → exit 4 without leaking it, no fallback to files | parity test green against the real warehouse | |
+| S2-6 | Manual QA | must | S2-5 | real `mapqa run --source databricks`, timing incl. warehouse wake-up, `diff` with the files run, `run_summary.json` shows source/location/read time (AC-05f), viewer opens from the Databricks run, screenshots | evidence in `reports/map-qa/qa/stage2/` | |
+| S2-7 | Docs + wrap-up | should | S2-6 | `app/README.md`, `mapqa.example.toml`, `app/AGENTS.md`, `check-databricks` skill notes, ADR-001 §4.5 status, commits | docs match `--help`; branch pushed when the user asks | |
+
+**Stage 2 out of scope:** `public_api`, writing anything to Databricks, Databricks MCP, mixing sources in one run, automatic fallback.
+
 ## Explicitly out of scope for this flow
 
 Databricks adapter and parity test (Stage 2), `public_api`, model reading pilot (Stage 3), verdict recording UI, OSM vs Overture check, tertiary roads in `missing_limit`.
