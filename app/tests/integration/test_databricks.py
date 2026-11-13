@@ -61,6 +61,16 @@ def test_run_summary_describes_the_remote_source(runs):
     assert remote["counts"] == local["counts"]
 
 
+def test_photo_metadata_identical_except_offline_thumbs(runs):
+    # JSON_ARRAY truncates TIMESTAMP to milliseconds; the adapter must keep the stored microseconds (capture
+    # photos_timestamp_precision.json, 2026-11-13)
+    _, files_out, _, dbx_out = runs
+    local = json.loads((files_out / "viewer_context.json").read_text(encoding="utf-8"))["photos"]
+    remote = json.loads((dbx_out / "viewer_context.json").read_text(encoding="utf-8"))["photos"]
+    strip = lambda photos: {pid: {k: v for k, v in meta.items() if k != "thumb"} for pid, meta in photos.items()}
+    assert strip(local) == strip(remote)
+
+
 def test_viewer_of_remote_run_uses_no_local_files(runs):
     _, _, _, dbx_out = runs
     context = json.loads((dbx_out / "viewer_context.json").read_text(encoding="utf-8"))

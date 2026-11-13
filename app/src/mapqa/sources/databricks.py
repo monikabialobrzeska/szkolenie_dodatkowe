@@ -138,7 +138,12 @@ class DatabricksSource:
         sign_rows = self._query(f"SELECT {', '.join(SIGNS_COLUMNS)}, base64(geometry) AS geometry_b64 "
                                 f"FROM {self.schema}.traffic_signs", "read traffic_signs")
         signs, outside = signs_frame(_decode(sign_rows), self.config.bbox)
-        photos = photos_frame(pd.DataFrame(self._query(f"SELECT {', '.join(PHOTOS_COLUMNS)} FROM {self.schema}.photos",
+        # JSON_ARRAY truncates TIMESTAMP to milliseconds; format on the server to keep the stored microseconds
+        # (capture photos_timestamp_precision.json)
+        photo_select = ", ".join(
+            "date_format(captured_at, \"yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX\") AS captured_at" if c == "captured_at" else c
+            for c in PHOTOS_COLUMNS)
+        photos = photos_frame(pd.DataFrame(self._query(f"SELECT {photo_select} FROM {self.schema}.photos",
                                                        "read photos"), columns=PHOTOS_COLUMNS))
         links = links_frame(pd.DataFrame(self._query(
             f"SELECT {', '.join(LINKS_COLUMNS)} FROM {self.schema}.photo_road_links", "read photo_road_links"),

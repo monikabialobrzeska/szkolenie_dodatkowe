@@ -49,6 +49,10 @@ CASES = {
     "information_schema_columns": dict(statement="SELECT table_name, column_name, data_type FROM workspace.information_schema.columns "
                                                  "WHERE table_schema = 'map_qa' ORDER BY table_name, ordinal_position"),
     "describe_history_osm_roads": dict(statement="DESCRIBE HISTORY workspace.map_qa.osm_roads LIMIT 1"),
+    "photos_timestamp_precision": dict(statement=(
+        "SELECT photo_id, captured_at, date_format(captured_at, \"yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX\") AS captured_at_us "
+        "FROM workspace.map_qa.photos WHERE photo_id IN ('mapillary_1003606477244774', "
+        "'panoramax_334a574d-18cb-4c2e-be3f-f99307e080d9') ORDER BY photo_id")),
     "volume_sources_json": dict(statement="SELECT value FROM read_files('/Volumes/workspace/map_qa/inputs/sources.json', "
                                           "format => 'text', wholeText => true)"),
 }

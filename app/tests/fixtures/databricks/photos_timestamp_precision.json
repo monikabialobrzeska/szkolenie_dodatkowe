@@ -1,0 +1,108 @@
+{
+  "case": "photos_timestamp_precision",
+  "captured_at": "2026-11-13T09:52:39Z",
+  "target": "SQL Statement Execution API 2.0, schema workspace.map_qa",
+  "request": {
+    "warehouse_id": "97c455ee6fb1fcb9",
+    "statement": "SELECT photo_id, captured_at, date_format(captured_at, \"yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX\") AS captured_at_us FROM workspace.map_qa.photos WHERE photo_id IN ('mapillary_1003606477244774', 'panoramax_334a574d-18cb-4c2e-be3f-f99307e080d9') ORDER BY photo_id",
+    "wait_timeout": "10s",
+    "on_wait_timeout": "CONTINUE",
+    "disposition": "INLINE",
+    "format": "JSON_ARRAY"
+  },
+  "exchanges": [
+    {
+      "method": "POST",
+      "path": "/api/2.0/sql/statements",
+      "http_status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "content-length": "84",
+        "x-databricks-org-id": "7474654895662663",
+        "x-request-id": "7086d286-cdca-454c-8301-579cf843413e"
+      },
+      "elapsed_s": 10.73,
+      "body_bytes": 84,
+      "body": {
+        "statement_id": "01f1df47-f7cd-1b3d-8632-98007b7b9bba",
+        "status": {
+          "state": "PENDING"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/2.0/sql/statements/01f1df47-f7cd-1b3d-8632-98007b7b9bba",
+      "http_status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "content-length": "786",
+        "x-databricks-org-id": "7474654895662663",
+        "x-request-id": "ac93e2f0-8d7f-4ec0-8919-32a8509bf9c6"
+      },
+      "elapsed_s": 0.83,
+      "body_bytes": 786,
+      "body": {
+        "statement_id": "01f1df47-f7cd-1b3d-8632-98007b7b9bba",
+        "status": {
+          "state": "SUCCEEDED"
+        },
+        "manifest": {
+          "format": "JSON_ARRAY",
+          "schema": {
+            "column_count": 3,
+            "columns": [
+              {
+                "name": "photo_id",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 0
+              },
+              {
+                "name": "captured_at",
+                "type_text": "TIMESTAMP",
+                "type_name": "TIMESTAMP",
+                "position": 1
+              },
+              {
+                "name": "captured_at_us",
+                "type_text": "STRING",
+                "type_name": "STRING",
+                "position": 2
+              }
+            ]
+          },
+          "total_chunk_count": 1,
+          "chunks": [
+            {
+              "chunk_index": 0,
+              "row_offset": 0,
+              "row_count": 2
+            }
+          ],
+          "total_row_count": 2,
+          "truncated": false
+        },
+        "result": {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 2,
+          "data_array": [
+            [
+              "mapillary_1003606477244774",
+              "2023-05-16T08:24:45.448Z",
+              "2023-05-16T08:24:45.448000Z"
+            ],
+            [
+              "panoramax_334a574d-18cb-4c2e-be3f-f99307e080d9",
+              "2026-07-21T10:15:44.186Z",
+              "2026-07-21T10:15:44.186141Z"
+            ]
+          ]
+        }
+      }
+    }
+  ],
+  "rows_read_total": 2,
+  "redactions": []
+}

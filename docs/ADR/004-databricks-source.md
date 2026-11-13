@@ -141,7 +141,7 @@ sequenceDiagram
 | Normalisers | Unit | sample rows from both sources | identical dtypes and values |
 | Parity | Integration, marker `databricks` (skipped with reason when variables are missing) | real warehouse | row counts = files; `review_queue.csv`/`.geojson` byte-identical; wrong token → exit 4, no leak |
 
-**Results 2026-11-13:** 74 tests green (5 against the real warehouse); `check-source --source databricks` 6× ok; full Databricks run 95 s (files 43 s); `review_queue.csv` / `.geojson` byte-identical; token absent from all outputs. Known, accepted difference outside the queue: `photos.captured_at` arrives from Databricks with millisecond precision (files: microseconds) — visible only in `viewer_context.json`, the viewer shows the date.
+**Results 2026-11-13:** 74 tests green (5 against the real warehouse); `check-source --source databricks` 6× ok; full Databricks run 95 s (files 43 s); `review_queue.csv` / `.geojson` byte-identical; token absent from all outputs. `JSON_ARRAY` truncates `TIMESTAMP` values to milliseconds although the table stores microseconds (capture `photos_timestamp_precision.json`); fixed by selecting `date_format(captured_at, "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX")`, so photo metadata is identical to files as well (test `test_photo_metadata_identical_except_offline_thumbs`, 75 tests green). Any new `TIMESTAMP` column must be read the same way.
 
 ### Technical acceptance criteria
 - **TAC-004-01** `mapqa run --source databricks` exits 0 and its `review_queue.csv` and `review_queue.geojson` are byte-identical to the files run on the pinned snapshot.
